@@ -1,4 +1,3 @@
-
 =========================================================
 what meant by web server, HTTP server , HTTP protcol
 =========================================================
@@ -86,3 +85,19 @@ what is a port number in networking
 نعم، بالفعل. الـ port number هو معرف يستخدم لتحديد خدمة معينة على الخادم، والتي يمكن الاتصال بها عبر شبكة الإنترنت. عندما يتم تشغيل خدمة معينة على الخادم، يتم تعيين رقم المنفذ (port number) الخاص بها، والذي يجب أن يكون فريداً ومختلفاً عن رقم المنافذ الأخرى المستخدمة في الخادم. وبهذه الطريقة، يمكن للعملاء المتصلين بالخادم الاتصال بالخدمة المحددة عن طريق استخدام رقم المنفذ الصحيح.
 
 مثلاً، إذا كان لدينا خدمات مختلفة مثل خدمة البريد الإلكتروني وخدمة نقل الملفات FTP وخدمة الويب، فسيتم تعيين رقم منفذ مختلف لكل خدمة على الخادم. وعلى سبيل المثال، يمكن أن يكون رقم المنفذ 80 مخصصاً لخدمة الويب (HTTP)، في حين يمكن أن يكون رقم المنفذ 21 مخصصاً لخدمة نقل الملفات FTP. وبهذه الطريقة، يمكن للعملاء الاتصال بالخدمات المحددة عن طريق استخدام رقم المنفذ المناسب.
+
+
+
+========================================================
+poll()
+========================================================
+
+
+=> why we dont use multi threading or multi process
+multi-threading and multi-processing both involve creating multiple threads or processes to handle multiple clients. Multi-threading can lead to issues such as race conditions and deadlocks, while multi-processing can lead to high resource usage and context switching overhead.
+
+=>In some cases, a socket may be connected to the server, but no data is available for reading or writing. When this happens, the server would typically block, waiting for data to arrive on that socket.
+Poll() allows the server to check multiple sockets simultaneously, and determine which ones have data available for reading or writing. This allows the server to avoid blocking on a particular socket, and instead move on to processing other sockets that have data available.
+
+
+=>poll() does not wait for a client to finish its work before moving on to the next client. poll() checks all the sockets in its set to see if any of them have data available for reading or writing. If data is available on a socket, poll() will return the socket descriptor and the server can then process the data on that socket. The server can then move on to the next client and repeat the process. If no data is available on any of the sockets, poll() will block until data becomes available or a timeout occurs.
