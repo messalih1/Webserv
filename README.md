@@ -101,3 +101,23 @@ Poll() allows the server to check multiple sockets simultaneously, and determine
 
 
 =>poll() does not wait for a client to finish its work before moving on to the next client. poll() checks all the sockets in its set to see if any of them have data available for reading or writing. If data is available on a socket, poll() will return the socket descriptor and the server can then process the data on that socket. The server can then move on to the next client and repeat the process. If no data is available on any of the sockets, poll() will block until data becomes available or a timeout occurs.
+
+
+
+=Asynchronous I/O and event notification are techniques used to optimize I/O operations in a computer system.
+
+Asynchronous I/O allows a process to start an I/O operation and then continue with other tasks without waiting for the operation to complete. When the I/O operation completes, the operating system notifies the process. This allows the process to perform other tasks while waiting for the I/O operation to complete, instead of blocking until the operation is finished.
+
+=Event notification is the process of notifying a process about an event that has occurred on a particular file descriptor, such as a socket or a file. When an event occurs, the kernel generates an event notification and sends it to the process that has registered interest in that event. The process can then take appropriate action based on the event.
+
+For example, in a server application, the process may register interest in the event of a new client connection on a socket. When a new client connects to the socket, the kernel generates an event notification and sends it to the server process. The server process can then accept the new connection and create a new client socket to communicate with the client. Similarly, the process may register interest in the event of data being available on a socket. When data becomes available on the socket, the kernel generates an event notification and sends it to the process. The process can then read the data from the socket and process it as required.
+
+kqueue() is a system call in Unix-based operating systems, primarily used for asynchronous I/O and event notification. It works by allowing a process to register a list of file descriptors for kernel events and then waits for those events to occur.
+
+When a process calls kqueue(), it creates a new kernel object that maintains a queue of events. The process can then add or remove events from the queue using the kevent() system call. Each event is represented by a struct kevent, which contains information such as the file descriptor to monitor, the type of event to monitor for, and any data associated with the event.
+
+Once events are added to the queue, the process can wait for them to occur using the kevent() system call with a timeout value. When an event occurs, the kernel removes it from the queue and returns information about the event to the process, such as the file descriptor that triggered the event and the type of event that occurred.
+
+In summary, kqueue() allows a process to efficiently monitor multiple file descriptors for events in a single system call. This can be useful for implementing high-performance network servers, among other applications.
+
+=registering file descriptors for kernel events means telling the kernel which file descriptors the server process is interested in monitoring for new events (such as incoming client connections). Once the kernel detects a new event on a monitored file descriptor, it notifies the server process, which can then take appropriate action. This allows the server to efficiently handle multiple clients and perform other tasks while waiting for events to occur.

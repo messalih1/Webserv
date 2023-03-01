@@ -1,0 +1,46 @@
+-make server multi clientients using kqueue()
+
+
+- Create a socket and bind it to a specific port
+- Set the socket to listen for incoming connections
+- Create a kqueue instance
+- Add the listening socket to the kqueue instance using the kevent() function
+- Wait for incoming connections using the kevent() function in a loop
+- If a new client connection is detected, add the client socket to the kqueue instance
+- If an existing client socket in the kqueue instance has data to read, read the data and process it
+- If an existing client socket in the kqueue instance can be written to, send data to the client
+- Here is some example code that demonstrates these steps:
+
+ 
+ 
+EV_SET(&ev_set[0], server_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+
+    &ev_set[0]: a pointer to the first element of the struct kevent array
+    server_socket: the file descriptor of the server socket to be monitored for events
+    EVFILT_READ: the type of event to monitor, in this case, read events (i.e., incoming data)
+    EV_ADD: the action to perform, in this case, add the event to the kqueue instance
+ 
+ 
+ 
+
+int kq = kqueue()
+     instance is created, you can use it to monitor multiple file descriptors for events
+
+
+- kq: the kqueue descriptor returned by the kqueue() function.
+
+- changelist: a pointer to an array of struct kevent structs that specify changes to the events being monitored. 
+In this case, we are not making any changes, so we pass NULL.
+
+- nchanges: the number of events in the changelist. Since we are not making any changes, we pass 0.
+
+- eventlist: a pointer to an array of struct kevent structs that will be filled in by the kevent() function with 
+the events that have occurred. This is where we receive notifications about the events we are monitoring.
+
+- nevents: the maximum number of events to return in the eventlist array. We set this to MAX_EVENTS.
+- timeout: a pointer to a struct timespec struct that specifies how long kevent() should wait for events to occur. 
+We are not setting a timeout, so we pass NULL.
+
+After this function call, the ev_list array will be filled with the events that have occurred, up to a maximum of 
+MAX_EVENTS. The number of events actually returned is stored in the nev variable. We can then loop through the 
+ev_list array to process each event.
