@@ -44,3 +44,88 @@ We are not setting a timeout, so we pass NULL.
 After this function call, the ev_list array will be filled with the events that have occurred, up to a maximum of 
 MAX_EVENTS. The number of events actually returned is stored in the nev variable. We can then loop through the 
 ev_list array to process each event.
+
+
+= After calling kevent(kq, ev_serv_set, 1, NULL, 0, NULL) to register the server socket for read events, the program waits for 
+events to occur by calling kevent(kq, NULL, 0, ev_clt_set, MAX_EVENTS, NULL) in a loop.
+ This call blocks until an event is detected on one of the registered file descriptors or the timeout is reached.
+
+
+
+=if(ev_clt_set[i].ident == fd_server)
+
+= when new connction has detected kevent creare new fd and assign to ident
+= if ident equal fd_server means have event of new connection 
+
+= calls kevent() to register the event with the kqueue instance. 
+
+=  struct kevent kev;
+EV_SET(&kev, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+if (kevent(kq, &kev, 1, NULL, 0, NULL) == -1)
+
+
+=> here we prepar and add new client to kqueue for waiting incommign data
+
+=> When an event occurs, kevent() fills in the struct kevent kev  array with the list of triggered events.
+The program then loops through the array to process each triggered event.
+
+=>A kqueue instance can be considered as a dynamic array of struct kevent objects. When a new file descriptor is added to the 
+kqueue using kevent(kq, &kev, 1, NULL, 0, NULL), a new struct kevent object is added to the end of the dynamic array maintained 
+by the kqueue instance. Therefore, as more file descriptors are added to the kqueue, the size of the dynamic array increases 
+accordingly. because is implememnted by deuque data struct
+
+This dynamic array can also be modified by removing events from it using kevent(kq, &kev, 0, NULL, 0, NULL). When a file 
+descriptor is removed from the kqueue, the corresponding struct kevent object is removed from the dynamic array maintained by 
+the kqueue instance.
+
+
+
+
+
+==========================================================================================================================================================
+
+EV_SET(): is a macro used to fill in the fields of a struct kevent data structure queue.
+
+- kevp is a pointer to a struct kevent data structure that is used to specify the event that should be added, deleted, or 
+modified in the kernel event queue. 
+After the struct kevent structure is initialized, it can be passed to the kevent() system call to add, 
+delete, or modify the event in the kernel event queue.
+
+
+- struct kevent
+ident: This member specifies the identifier for the event. This can be the file descriptor, signal number, or other identifier depending on the type of event being monitored. For example, when monitoring file descriptors for read/write events, ident would contain the file descriptor.
+
+filter: This member specifies the type of event being monitored. There are several types of filters that can be used, including read, write, signal, vnode (file system events), and others.
+
+flags: This member specifies the action to take on the event. The available flags include EV_ADD (add the event to the kqueue), EV_DELETE (remove the event from the kqueue), EV_ENABLE (enable the event if it was previously disabled), EV_DISABLE (disable the event if it was previously enabled), and others.
+
+fflags: This member specifies filter-specific flags that modify the behavior of the filter. For example, for the read filter, the NOTE_READ flag can be used to indicate that the event should be triggered when data is available to be read.
+
+data: This member specifies filter-specific data. For example, for the read filter, data can be used to indicate the number of bytes available to be read.
+
+udata: This member is opaque user data and can be used to associate events with data. When an event is triggered, the udata member of the corresponding struct kevent will be passed back to the application along with the event information.
+
+
+
+1
+New client connected
+1
+1
+Client disconnected
+1
+New client connected
+1
+New client connected
+1
+2
+Client disconnected
+New client connected
+1
+1
+Client disconnected
+1
+New client connected
+1
+2
+Client disconnected
+New client connected
