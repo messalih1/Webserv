@@ -41,6 +41,8 @@ using std::stack;
 
 class lunch_server
 {
+    friend class clinets_obj;
+
     private:
         int fd_server;
         int fd_new_client;
@@ -53,12 +55,13 @@ class lunch_server
         struct kevent server_evets[MAX_EVENTS];
         struct kevent clients_events[MAX_EVENTS];
         struct kevent kev;
-        int total_bytes_received;
+        int total_by ;
+        int bytes_red;
         // clinets_obj client_obj;
         std::map<int,clinets_obj> client_obj;
+        
 
     public: 
-
         lunch_server();
         void create_server_socket();
     

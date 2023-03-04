@@ -6,10 +6,12 @@
 
 lunch_server::lunch_server()
 {
-   
+//    string buffer(1000);
+    // buffer.resize(1000);
+    char buff[BUFFER_SIZE] = {0};
+    
     fd_server = socket(AF_INET,SOCK_STREAM,0);
      
-    
     if(fd_server < 0)
         throw throwException();
 
@@ -56,29 +58,31 @@ lunch_server::lunch_server()
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) == -1) // add new connection to kevents, 
                         throw throwException();
                 else
-                {
-                    client_obj.insert(std::make_pair<int,clinets_obj>(fd_new_client,clinets_obj()));
                     cout << "New client connected\n";
-                }
             }
             else 
-            { 
-                // if incomming data will enter the first if because it is not new connection , will enter here and Handle data from client
-                int client_socket = clients_events[i].ident;// have fd of the client
-                int nbytes = recv(client_socket, &client_obj[client_socket].buffer , sizeof(client_obj[client_socket].buffer), 0);
-                client_obj.insert(std::make_pair<int,clinets_obj>(client_socket,clinets_obj(client_obj[client_socket].buffer)));
-                if (nbytes == 0) 
+            {
+                int client_socket = clients_events[i].ident;
+                client_obj[client_socket].bytes_received = recv(client_socket, buff, BUFFER_SIZE, 0);
+                if (client_obj[client_socket].bytes_received == -1) 
+                    throw throwException();
+                else if (client_obj[client_socket].bytes_received == 0) 
                 {
-                    // Client closed connection or error occurred
                     cout << "Client disconnected\n";
-                    EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);//In the example code you provided, EV_SET is used to modify an existing event, specifically to delete it from the kqueue.
-                    kevent(kq, &kev, 1, NULL, 0, NULL); // to  stop monitoring the client socket for incoming data
+                    EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(kq, &kev, 1, NULL, 0, NULL); 
                     close(client_socket);
                 }
                 else
                 {
-                    cout << "=> " << client_obj[client_socket].buffer << endl;
+                    buff[client_obj[client_socket].bytes_received] = '\0';
+                    client_obj[client_socket].total_bytes_received += client_obj[client_socket].bytes_received;
+                    client_obj[client_socket].buffer.resize(client_obj[client_socket].total_bytes_received );
+                    client_obj[client_socket].buffer = buff;
+                     
+                    cout << "=> cline " << client_socket  << " " << client_obj[client_socket].total_bytes_received << endl;
                 }
+                
             }
         }
     }

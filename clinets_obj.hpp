@@ -36,20 +36,25 @@ using std::stack;
 
 class clinets_obj
 {
+    friend class lunch_server;
     private:
-
+        string buffer;
+        int bytes_received;
+        int total_bytes_received;
     public:
         clinets_obj();
         clinets_obj(string str);
-
-        std::string buffer;
-
+        clinets_obj(int newSize);
+        int reseve(string buff);
         ~clinets_obj();
+         
 };
 
 
-
+// 20991
 
 
 
 #endif
+
+ 
