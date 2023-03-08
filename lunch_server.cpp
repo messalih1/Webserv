@@ -1,7 +1,8 @@
 #include "lunch_server.hpp"
-#include "clinets_obj.hpp"
+#include "clients_obj.hpp"
+#include <fstream>
 
-
+#include <fcntl.h>
 
 
 lunch_server::lunch_server()
@@ -24,6 +25,8 @@ lunch_server::lunch_server()
     optval = 1;
     if(setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
         throw throwException();
+    
+    // fcntl(fd_server, F_SETFL, O_NONBLOCK);
 
     if (bind(fd_server,  reinterpret_cast<struct sockaddr *> (&serv_struct), sizeof(serv_struct)) < 0) 
         throw throwException();
@@ -58,31 +61,42 @@ lunch_server::lunch_server()
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) == -1) // add new connection to kevents, 
                         throw throwException();
                 else
-                    cout << "New client connected\n";
+                {
+                    
+                }
+                    // cout << "New client connected\n";
             }
-            else 
+            else if( clients_events[i].filter == EVFILT_READ)
             {
                 int client_socket = clients_events[i].ident;
-                client_obj[client_socket].bytes_received = recv(client_socket, buff, BUFFER_SIZE, 0);
-                if (client_obj[client_socket].bytes_received == -1) 
+                int rtnFromfnc = map_objs[client_socket].recv_from_evry_client(client_socket,kev,clients_events[i].data,kq);
+            
+            
+                if(rtnFromfnc == -1)
                     throw throwException();
-                else if (client_obj[client_socket].bytes_received == 0) 
+                else if(rtnFromfnc == 0)
                 {
                     cout << "Client disconnected\n";
                     EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &kev, 1, NULL, 0, NULL); 
                     close(client_socket);
                 }
-                else
-                {
-                    buff[client_obj[client_socket].bytes_received] = '\0';
-                    client_obj[client_socket].total_bytes_received += client_obj[client_socket].bytes_received;
-                    client_obj[client_socket].buffer.resize(client_obj[client_socket].total_bytes_received );
-                    client_obj[client_socket].buffer = buff;
-                     
-                    cout << "=> cline " << client_socket  << " " << client_obj[client_socket].total_bytes_received << endl;
-                }
+                           
                 
+                 // else if(rtnFromfnc == 2)
+                // {
+ 
+                //     // handle request without body
+                // }
+                // else if(rtnFromfnc == 1)
+                // {
+                    // if(map_objs[client_socket].total_bytes_received >= map_objs[client_socket].ContentLength)
+                // }
+
+                     
+                  
+                
+                //  parsing request => and check it the size | and check content lenght
             }
         }
     }

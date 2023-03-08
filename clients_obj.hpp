@@ -34,19 +34,25 @@ using std::stack;
 
 #define BUFFER_SIZE 1024
 
-class clinets_obj
+class clients_obj
 {
-    friend class lunch_server;
-    private:
+     private:
+    public:
         string buffer;
+        string headerOfRequest;
+        string bofyofRequest;
         int bytes_received;
         int total_bytes_received;
-    public:
-        clinets_obj();
-        clinets_obj(string str);
-        clinets_obj(int newSize);
-        int reseve(string buff);
-        ~clinets_obj();
+        long long i;
+     
+        int flag;
+        long long ContentLength;
+        clients_obj();
+
+        int recv_from_evry_client(int client_socket,  struct kevent   kev, int len, int   kq);
+        void check_buffer();
+        int contentLeninReq();
+        ~clients_obj();
          
 };
 

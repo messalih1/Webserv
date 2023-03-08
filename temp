@@ -1,0 +1,94 @@
+    char data[len];
+    bzero(data, len);
+    bytes_received = recv(client_socket, &data, len, 0);
+    
+    if (bytes_received == -1) 
+        return -1;
+    else if (bytes_received == 0) 
+    {
+        cout << "Client disconnected\n";
+        EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+        kevent(kq, &kev, 1, NULL, 0, NULL); 
+        close(client_socket);
+        return 1;
+    }
+     
+
+    int j = 0; 
+    while (j < bytes_received)
+    {
+        buffer.push_back(data[j]);
+        j++;
+    }
+      
+    // total_bytes_received += len;
+    
+    // pos = 0;
+    // while (buffer[pos])
+    // {
+    //     if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+    //     {
+    //         pos += 2;
+    //         if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
+    //         {
+    //             headerOfRequest = buffer.substr(0,pos);
+    //             pos = headerOfRequest.find("Content-Length");
+    //             if(pos != -1)
+    //             {
+    //                 ContentLength = atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
+    //                 // return 1;
+    //             }
+    //             // return 2;
+    //         }
+    //         --pos;
+    //     }
+    //     pos++;
+    // }
+
+
+
+ // while (total_bytes_received < len) 
+    // {
+    //     char data[BUFFER_SIZE];
+    //     bzero(data, BUFFER_SIZE);
+    //     bytes_received = recv(client_socket, &data, BUFFER_SIZE, 0);
+        
+    //     if (bytes_received == -1) 
+    //         return -1;
+         
+    //     total_bytes_received += bytes_received; // 5
+        int j = 0; 
+        while (j < bytes_received)
+        {
+            buffer.push_back(data[j]);
+            j++;
+        }
+        int pos = 0;
+        while (buffer[pos] && flag == 0)
+        {
+            if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+            {
+                pos += 2;
+                if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
+                {
+                    headerOfRequest = buffer.substr(0,pos);
+                    pos = headerOfRequest.find("Content-Length");
+                    if(pos != -1)
+                    {
+                        ContentLength = atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
+                        flag = 1;
+                        i = headerOfRequest.size();
+                        break;
+                    }
+                    // return 2;
+                }
+                --pos;
+            }
+            pos++;
+        }
+    }
+
+
+44793994
+
+44794246

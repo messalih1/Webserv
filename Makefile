@@ -2,9 +2,9 @@ NAME = webserv
 
 CC = c++
 
-C_FILES = main.cpp  lunch_server.cpp clinets_obj.cpp
+C_FILES = main.cpp  lunch_server.cpp clients_obj.cpp
 
-H_FILES =   lunch_server.hpp clinets_obj.hpp
+H_FILES =   lunch_server.hpp clients_obj.hpp
 
 C_FLAGS =-std=c++98  #-Wall -Wextra -Werror -std=c++98
 

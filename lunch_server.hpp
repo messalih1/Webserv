@@ -26,7 +26,7 @@
 #include <type_traits>
 
 
-#include "clinets_obj.hpp"
+#include "clients_obj.hpp"
 
 
 using std::string;
@@ -36,14 +36,16 @@ using std::vector;
 using std::stack;
 
 
-#define PORT  8080
+#define PORT  8081
 #define MAX_EVENTS 200
 
 class lunch_server
 {
-    friend class clinets_obj;
 
     private:
+        
+
+    public: 
         int fd_server;
         int fd_new_client;
         int  kq;
@@ -55,13 +57,9 @@ class lunch_server
         struct kevent server_evets[MAX_EVENTS];
         struct kevent clients_events[MAX_EVENTS];
         struct kevent kev;
-        int total_by ;
-        int bytes_red;
-        // clinets_obj client_obj;
-        std::map<int,clinets_obj> client_obj;
+       
         
-
-    public: 
+        std::map<int,clients_obj> map_objs;
         lunch_server();
         void create_server_socket();
     
