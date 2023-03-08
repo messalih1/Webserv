@@ -1,21 +1,23 @@
 #include "clients_obj.hpp"
- 
+ #include <fstream>
+
 
 // in evry default construct cretae empty string and when you want to fill add a variable to continue
 
 clients_obj::clients_obj()
 {
     total_bytes_received = total_bytes_received = 0;
-    i  = flag = 0;
+    i  = flag  = 0;
     // buffer.resize(BUFFER_SIZE);
     buffer = "";
+    file = "file";
 }
 
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
     total_bytes_received = 0;
-    
+    index = std::to_string(client_socket);
     
     char data[len];
     bzero(data, len);
@@ -38,6 +40,21 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos);
+                pos = headerOfRequest.find("mp4");
+                if(pos != -1)
+                {
+                    MyFile.open(file.append(index).append(".mp4"));
+                }
+                pos = headerOfRequest.find("jpeg");
+                if(pos != -1)
+                {
+                    MyFile.open("file.jpeg");
+                }
+                pos = headerOfRequest.find("pdf");
+                if(pos != -1)
+                {
+                    MyFile.open("file.pdf");
+                }
                 pos = headerOfRequest.find("Content-Length");
                 if(pos != -1)
                 {
@@ -54,52 +71,21 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     }
      
     i += len;
-    if(i >= ContentLength)
+    if(i >= ContentLength )
     {
-        cout << buffer.substr(headerOfRequest.size() + 2,ContentLength);
-        // cout << i << endl;
         // cout << ContentLength << endl;
-         
-        exit(0);
+        // MyFile.open(file.append(index));
+        MyFile << buffer.substr(headerOfRequest.size() + 2,ContentLength);
+        // cout << buffer.substr(headerOfRequest.size() + 2,ContentLength) << endl;
+
+        MyFile.close();
+  
     }
     // cout << i << endl;
     return 1;
 }
 
-
-// int clients_obj::findContentLenght()
-// {
-   
-
-//     return 0;
-
-// }
-
-void clients_obj::check_buffer()
-{ 
-    // while (buffer[i])
-    // {
-    //     if(buffer[i] == '\r' && buffer[i + 1] == '\n')
-    //     {
-    //         i+=2;
-    //         if(buffer[i] == '\r' && buffer[i + 1] == '\n' && buffer[i + 2] == '\0')
-    //         {
-                 
-    //             i -= 2;
-    //             headerOfRequest =  buffer.substr(0,i) ;
-    //             cout << headerOfRequest << endl;
-    //             // if(headerOfRequest.find("Content"))
-    //             //     cout << "CONTENT LENGHT FINDING\n";
-    //             break;
-    //         }
-    //         // else
-    //         //     i--;
-
-    //     }
-    //     i++;
-    // }
-    
-}
+ 
 
 clients_obj::~clients_obj()
 {

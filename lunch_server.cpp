@@ -81,7 +81,10 @@ lunch_server::lunch_server()
                     kevent(kq, &kev, 1, NULL, 0, NULL); 
                     close(client_socket);
                 }
-                           
+                // if(map_objs[client_socket].i >= map_objs[client_socket].ContentLength)
+                // {
+                //     cout << map_objs[client_socket].buffer.substr(map_objs[client_socket].headerOfRequest.size() + 2,map_objs[client_socket].ContentLength + map_objs[client_socket].headerOfRequest.size());
+                // }
                 
                  // else if(rtnFromfnc == 2)
                 // {

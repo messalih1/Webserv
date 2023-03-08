@@ -24,6 +24,8 @@
 #include <sys/event.h>
 #include <sys/time.h>
 #include <exception>
+ #include <fstream>
+#include<string>  
 
 
 using std::string;
@@ -38,14 +40,16 @@ class clients_obj
 {
      private:
     public:
+        string file;
         string buffer;
         string headerOfRequest;
         string bofyofRequest;
         int bytes_received;
         int total_bytes_received;
         long long i;
-     
+        std::ofstream MyFile;
         int flag;
+        string index;
         long long ContentLength;
         clients_obj();
 
