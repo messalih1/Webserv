@@ -47,15 +47,24 @@ class clients_obj
         int bytes_received;
         int total_bytes_received;
         long long i;
-        std::ofstream MyFile;
         int flag;
+        int flag_;
         string index;
         long long ContentLength;
-        clients_obj();
+        std::ofstream MyFile;
 
+
+        clients_obj();
+       
         int recv_from_evry_client(int client_socket,  struct kevent   kev, int len, int   kq);
-        void check_buffer();
-        int contentLeninReq();
+        int checkbody_(int r);
+        int checkToken(char *r);
+        
+
+        long long	ft_atoi(const char *str);
+        int checkHeaderOfreq();
+        int checkHeaderOfreq_();
+        int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
         ~clients_obj();
          
 };

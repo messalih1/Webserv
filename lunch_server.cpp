@@ -62,15 +62,14 @@ lunch_server::lunch_server()
                         throw throwException();
                 else
                 {
+                    // cout << "New client connected\n";
                     
                 }
-                    // cout << "New client connected\n";
             }
             else if( clients_events[i].filter == EVFILT_READ)
             {
                 int client_socket = clients_events[i].ident;
                 int rtnFromfnc = map_objs[client_socket].recv_from_evry_client(client_socket,kev,clients_events[i].data,kq);
-            
             
                 if(rtnFromfnc == -1)
                     throw throwException();
@@ -81,25 +80,8 @@ lunch_server::lunch_server()
                     kevent(kq, &kev, 1, NULL, 0, NULL); 
                     close(client_socket);
                 }
-                // if(map_objs[client_socket].i >= map_objs[client_socket].ContentLength)
-                // {
-                //     cout << map_objs[client_socket].buffer.substr(map_objs[client_socket].headerOfRequest.size() + 2,map_objs[client_socket].ContentLength + map_objs[client_socket].headerOfRequest.size());
-                // }
-                
-                 // else if(rtnFromfnc == 2)
-                // {
- 
-                //     // handle request without body
-                // }
-                // else if(rtnFromfnc == 1)
-                // {
-                    // if(map_objs[client_socket].total_bytes_received >= map_objs[client_socket].ContentLength)
-                // }
-
-                     
-                  
-                
-                //  parsing request => and check it the size | and check content lenght
+                else if(rtnFromfnc == -2)
+                    cout << "error in the request\n";
             }
         }
     }

@@ -105,22 +105,168 @@ Connection: keep-alive
 Content-Length: 2568499
 Content-Type: image/jpeg
 
-GET / HTTP/1.1
-User-Agent: PostmanRuntime/7.31.0
-Accept: */*
-Postman-Token: 1db30af8-510a-4aad-8498-8813c7252433
-Host: 127.0.0.1:8081
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Content-Length: 13914472
-Content-Type: application/pdf
 
-GET / HTTP/1.1
-User-Agent: PostmanRuntime/7.31.0
-Accept: */*
-Postman-Token: fd6f5023-9423-444b-a19f-b4b367336980
-Host: 127.0.0.1:8081
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Content-Length: 44793994
-Content-Type: video/mp4
+HTTP/1.1
+
+Host:
+127.0.0.1:8081
+Connection:
+keep-alive
+Cache-Control:
+max-age=0
+sec-ch-ua:
+"Chromium";v="110",
+"Not
+A(Brand";v="24",
+"Google
+Chrome";v="110"
+sec-ch-ua-mobile:
+?0
+sec-ch-ua-platform:
+"macOS"
+Upgrade-Insecure-Requests:
+1
+User-Agent:
+Mozilla/5.0
+(Macintosh;
+Intel
+Mac
+OS
+X
+10_15_7)
+AppleWebKit/537.36
+(KHTML,
+like
+Gecko)
+Chrome/110.0.0.0
+Safari/537.36
+Accept:
+text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site:
+none
+Sec-Fetch-Mode:
+navigate
+Sec-Fetch-User:
+?1
+Sec-Fetch-Dest:
+document
+Accept-Encoding:
+gzip,
+deflate,
+br
+Accept-Language:
+en-GB,en-US;q=0.9,en;q=0.8,ar;q=0.7,fr;q=0.6
+
+
+
+
+int clients_obj::getHeaderLine()
+{
+    char *header = strtok((char*)(headerOfRequest.data()),"\r\n");
+     int len = strlen(header);
+
+    char *tmp = strtok(header," ");
+    if(strcmp(tmp,"GET") != 0 && strcmp(tmp,"POST") != 0 && strcmp(tmp,"DELET") != 0)
+        return -1;
+    tmp = strtok(NULL," ");
+    if(tmp[0] != '/')
+        return -1;
+    tmp = strtok(NULL," ");
+    if(strcmp(tmp,"HTTP/1.1") != 0)
+        return -1;
+    
+    // while (header != NULL )
+    // { 
+    //     if (strcmp(header,"Host:") != 0 && strcmp(header,"Connection:") != 0 && strcmp(header,"Cache-Control:") != 0 && strcmp(header,"sec-ch-ua:") != 0 &&
+    //     strcmp(header,"sec-ch-ua-mobile:") != 0 &&strcmp(header,"sec-ch-ua-platform:") != 0 && strcmp(header,"Upgrade-Insecure-Requests:") != 0 && 
+    //     strcmp(header,"User-Agent:") != 0 && strcmp(header,"Accept:") != 0 && strcmp(header,"Sec-Fetch-Site:")!= 0 && strcmp(header,"Sec-Fetch-Mode:") != 0 && 
+    //     strcmp(header,"Sec-Fetch-User:") != 0 && strcmp(header,"Sec-Fetch-Dest:")!= 0 && strcmp(header,"Accept-Encoding:") != 0 && strcmp(header,"Accept-Language:") != 0 &&
+    //     strcmp(header,"Postman-header:") != 0  && strcmp(header,"Content-Type:") != 0) return -1;
+         
+    //     header = strtok(NULL, " ");
+    // }
+    return len;
+}
+
+ // use malloc
+
+int clients_obj::checkToken(char *token)
+{
+    int j = 0;
+    int k = 0;
+    string sub1 = "";
+    string sub2 = "";
+    while (token[i])
+    {
+        if(token[i] == ':')
+        {
+            while (k < i)
+                sub1.push_back(token[k++]);
+            i++;
+            while (token[i])
+                sub2.push_back(token[i++]);
+            break;
+        }
+        i++;
+    }
+     
+    cout << sub1 << endl;
+    cout << sub2 << endl;
+    return 1;
+}
+
+int clients_obj::checkbody_(int r)
+{
+    char *token = strtok(&headerOfRequest[r + 2],"\r\n");
+    
+    
+    while (token != NULL)
+    {
+        if(checkToken(token) == -1)
+            return -1;
+        
+        token = strtok(NULL,"\r\n");
+    }
+    
+    return 1;
+}
+int clients_obj::checkHeaderOfreq()
+{
+    int returnfunc;
+
+    returnfunc = getHeaderLine();
+     
+    if(returnfunc <= 0)
+        return -1;
+    
+    if(checkbody_(returnfunc) == -1)
+        return -1;
+
+    // while (header != NULL )
+    // { 
+        // if (strcmp(header,"Host:") != 0 && strcmp(header,"Connection:") != 0 && strcmp(header,"Cache-Control:") != 0 && strcmp(header,"sec-ch-ua:") != 0 &&
+        // strcmp(header,"sec-ch-ua-mobile:") != 0 &&strcmp(header,"sec-ch-ua-platform:") != 0 && strcmp(header,"Upgrade-Insecure-Requests:") != 0 && 
+        // strcmp(header,"User-Agent:") != 0 && strcmp(header,"Accept:") != 0 && strcmp(header,"Sec-Fetch-Site:")!= 0 && strcmp(header,"Sec-Fetch-Mode:") != 0 && 
+        // strcmp(header,"Sec-Fetch-User:") != 0 && strcmp(header,"Sec-Fetch-Dest:")!= 0 && strcmp(header,"Accept-Encoding:") != 0 && strcmp(header,"Accept-Language:") != 0 &&
+        // strcmp(header,"Postman-header:") != 0  && strcmp(header,"Content-Type:") != 0) return -1;
+    //      cout << header << endl;
+    //     header = strtok(NULL, " ");
+    // }
+ 
+
+    return 1;
+}
+
+
+
+
+
+- slice header of request.
+- if found content lenght return it
+
+
+
+
+
+
+echo -e "GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n" | nc www.example.com 80
