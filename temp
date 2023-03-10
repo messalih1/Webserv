@@ -258,6 +258,76 @@ int clients_obj::checkHeaderOfreq()
 }
 
 
+if(rtn > 0 && flag == 1) // if has content lenght
+    {
+        if(flag_ == 0) // to enter here one time
+        {
+            rtn = headerOfRequest.find("mp4");
+            if(rtn != -1)
+                MyFile.open(file.append(index).append(".mp4"));
+            rtn = headerOfRequest.find("jpeg");
+            if(rtn != -1)
+                MyFile.open("file.jpeg");
+            rtn = headerOfRequest.find("pdf");
+            if(rtn != -1)
+                MyFile.open("file.pdf");
+            flag_ = 1;
+        }
+        i += len;
+        if(i >= ContentLength )// finish recivng
+        {
+            MyFile << buffer.substr(headerOfRequest.size() + 2,ContentLength);
+            // cout << "recive from client: "  << client_socket << endl;
+            MyFile.close();
+        }
+    }
+    else if(rtn == 0)
+    {
+        // check header line and headers
+         // withou budy
+    }
+    else
+        return -2;
+     
+while (buffer[pos] && flag == 0)// for entring one time
+    {
+        if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+        {
+            pos += 2;
+            if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
+            {
+                headerOfRequest = buffer.substr(0,pos);
+                // check header line and headers | send request from nc
+                // send custom request to server
+                if(checkHeaderOfreq_() == -1)
+                    return -1;
+                
+                pos = headerOfRequest.find("Content-Length"); // return from the checkHeaderOfreq() the content lenght
+                if(pos != -1)
+                {
+                    ContentLength = ft_atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
+                    flag = 1;
+                    i = headerOfRequest.size();
+                    return  ContentLength;
+                }
+                else
+                {
+                    // without body
+                    flag = 2;
+                    return 0;
+                }
+            }
+            --pos;
+        }
+        pos++;
+    }
+    
+    if(flag == 1)
+        return 1;
+    else if(flag == 2)
+        return 0;
+    else
+        return -1;
 
 
 
@@ -270,3 +340,20 @@ int clients_obj::checkHeaderOfreq()
 
 
 echo -e "GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n" | nc www.example.com 80
+
+
+GET / HTTP/1.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+

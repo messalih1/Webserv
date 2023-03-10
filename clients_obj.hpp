@@ -44,11 +44,14 @@ class clients_obj
         string buffer;
         string headerOfRequest;
         string bofyofRequest;
+        int c;
+        int t;
         int bytes_received;
         int total_bytes_received;
         long long i;
         int flag;
         int flag_;
+        int error;
         string index;
         long long ContentLength;
         std::ofstream MyFile;
@@ -62,9 +65,13 @@ class clients_obj
         
 
         long long	ft_atoi(const char *str);
+        
         int checkHeaderOfreq();
         int checkHeaderOfreq_();
+        int checkHeaderLine();
+        int checkHeaders(int index);
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
+        int checkKeyValue(char *token, int & i, int & j);
         ~clients_obj();
          
 };
@@ -72,8 +79,8 @@ class clients_obj
 
 // 20991
 
-
-
+// if have an error in parssing should return a response
+// should aassaign -1 to error and return 0 to desconnect
 #endif
 
  

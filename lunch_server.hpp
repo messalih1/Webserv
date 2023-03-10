@@ -62,12 +62,22 @@ class lunch_server
         std::map<int,clients_obj> map_objs;
         lunch_server();
         void create_server_socket();
-    
+        
 
         ~lunch_server();
         class throwException : public std::exception
         {
-            const char * what () const throw ();
+            
+            public:
+                throwException(const std::string& message) : message_(message) {}
+                 virtual ~throwException() _NOEXCEPT  {}
+            const char * what () const throw ()
+            {
+                return message_.c_str();
+            }
+
+        private:
+            std::string message_;
         };
 };
 
@@ -90,3 +100,6 @@ class lunch_server
 */
 
 #endif
+
+
+ 
