@@ -1,5 +1,5 @@
 #include "clients_obj.hpp"
- #include <fstream>
+#include <fstream>
 
 
 // in evry default construct cretae empty string and when you want to fill add a variable to continue
@@ -8,7 +8,7 @@ clients_obj::clients_obj()
 {
     total_bytes_received  = 0;
     i  = flag = flag_  = j = 0;
-    buffer = bodyofRequest = "";
+    buffer = bodyofRequest = tempString = "";
     file = "file";
 }
 
@@ -156,10 +156,10 @@ int clients_obj::checkHeaders(int index)
     // when add char after \r\n will add in first of the second line
     char *header;
     int i;
-
-    // string str  = &headerOfRequest[index]; 
+    string str  = &headerOfRequest[index]; 
+    
     i  = 0;
-    header = strtok(&headerOfRequest[index],"\n");
+    header = strtok((char*)(str.data()),"\n");
     
     while (header != NULL)
     {
@@ -177,6 +177,7 @@ int clients_obj::checkHeaders(int index)
 int clients_obj::checkHeaderOfreq_()
 {
     int rtn = checkHeaderLine();
+
 
     if(rtn == -1)
         return -1;
@@ -199,15 +200,25 @@ int clients_obj::checkHeaderOfreq()
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
-                
                 if(checkHeaderOfreq_() == -2)
                     return -2;
                 
                 pos = headerOfRequest.find("Transfer-Encoding: chunked");  
                 if(pos != -1)
                 {
-                    j = headerOfRequest.size() + 3;// because headerOfRequest just include \r, +1 to include also \n
+                    int i = headerOfRequest.size() + 3;// because headerOfRequest just include \r, +1 to include also \n
                     flag = 3;
+                    string hexString = "";
+                    
+                    while (buffer[i] && buffer[i] != '\r')
+                    {
+                        hexString.push_back(buffer[i]);
+                        i++;
+                    }
+                    ContentLength = std::stoul(hexString, NULL, 16);
+                     
+                    j = i + 2;
+                    hexString.clear();
                     return 1;
                 }
                 pos = headerOfRequest.find("Content-Length");  
@@ -240,34 +251,16 @@ int clients_obj::checkHeaderOfreq()
 }
 
 
-int clients_obj::chanckedRequest(int index) // return from end of it 
-{
-    unsigned long decimalNum ;
-    // start from end of header of request
-    string hexString = "";
-    string temp = &buffer[index];
+void clients_obj::chanckedRequest(int len) // return from end of it 
+{ 
     int i = 0;
-    int j = 0;
-    while (temp[i])
+    while (i < len)// because some time rquest has '\0'
     {
-        while (temp[i] && temp[i] != '\r')
-        {
-            hexString.push_back(temp[i]);
-            i++;
-        }
-        decimalNum = std::stoul(hexString, NULL, 16);
-        
-        i+=2;
-        while (j < decimalNum)
-        {
-            bodyofRequest.push_back(temp[i + j]);
-            j++;
-        }
- 
-        i+=2;
+        bodyofRequest.push_back(buffer[j]);
+        j++;
+        i++;
     }
-    
-    return index;
+      
 }
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
@@ -278,6 +271,7 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     
     if(rtn == 0 || rtn == -1)
         return rtn;
+    
     
     rtn = checkHeaderOfreq();
     if(rtn == -2)
@@ -312,9 +306,18 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     }
     else if(flag == 3)// if is chenked
     {
-        j += chanckedRequest(j);
+        if(j != 0)
+            chanckedRequest(len);
+        i += len;
+         
+        if(i >= ContentLength)
+        {
+            cout << bodyofRequest <<endl;
+            j = 0;
+        }
+        // if(flag_ == 5)
+        //     cout << bodyofRequest << endl;
     }
-    
     return 1;
 }
 
@@ -323,5 +326,3 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
 clients_obj::~clients_obj()
 {
 }
-
-// trnsfere encoding

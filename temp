@@ -435,15 +435,63 @@ capital
 ----------------------------546396952315283955169235--
 
 
-HTTP/1.0 200 OK 
-Content-Type: text/plain 
-Transfer-Encoding: chunked
-\r\n
 
-5\r\n
-ahmed\r\n
+
+
+17 => len of request body
+6\r\n
+Hello,
+6\r\n
+world!
 0\r\n
 \r\n
+0\r\n
 
 
  
+
+7\r\n
+abc\n
+dfe\r\n
+0
+
+
+
+2300044
+
+2300023
+// trnsfere encoding
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+52
+13
+10
+97
+10
+10
+98
+13
+10
+48
+13
+10
+13
+10

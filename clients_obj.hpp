@@ -40,20 +40,21 @@ class clients_obj
 {
      private:
     public:
-        string          file;
-        string          buffer;
-        string          headerOfRequest;
-        string          bodyofRequest;
-        string          index;
-        std::ofstream   MyFile;
+        string              file;
+        string              buffer;
+        string              headerOfRequest;
+        string              bodyofRequest;
+        string              tempString;
+        string              index;
+        std::ofstream       MyFile;
 
-        int             bytes_received;
-        int             total_bytes_received;
-        int             flag;
-        int             flag_;
-        int             j;
-        long long       i;
-        long long       ContentLength;
+        int                 bytes_received;
+        int                 total_bytes_received;
+        int                 flag;
+        int                 flag_;
+        int                 j;
+        unsigned long       i;
+        unsigned long       ContentLength;
 
 
         clients_obj();
@@ -70,7 +71,7 @@ class clients_obj
         int checkHeaders(int index);
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
         int checkKeyValue(char *token,const int & i);
-        int chanckedRequest(int index);
+        void chanckedRequest(int len);
         ~clients_obj();
          
 };
