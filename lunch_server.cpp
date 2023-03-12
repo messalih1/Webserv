@@ -73,15 +73,18 @@ lunch_server::lunch_server()
                     throw throwException("error in rev()");
                 else if(rtnFromfnc == 0)// ||rtnFromfnc == -2 )
                 {
-                    cout << "Client disconnected\n";
+                    // cout << "Client disconnected\n";
                     EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &kev, 1, NULL, 0, NULL); 
+
                     close(client_socket);
                 }
                 
                 else if(rtnFromfnc == -2)
                 {
                     cout << "error in the request\n";
+                    EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(kq, &kev, 1, NULL, 0, NULL); 
                     // Check the request method
                     // if (request.method() != boost::beast::http::verb::get) {
                     // // Respond with "Method not allowed" error

@@ -357,3 +357,93 @@ GET / HTTP/1.1
 
 
 
+while (str[i])
+    {
+        j = i;
+        while (str[i] && str[i] != ':')
+            i++;
+        i++;
+        temp = ft_substr(str.data(),j,i);
+        if( strcmp("Host:",temp) != 0 && strcmp("User-Agent:",temp) != 0 && strcmp("Accept:",temp) != 0 && strcmp("Accept-Language:",temp) != 0 && strcmp("Accept-Encoding:",temp) != 0 && strcmp("Authorization:",temp) != 0 && strcmp("Cache-Control:",temp) != 0 && 
+        strcmp("Connection:",temp) != 0 && strcmp("Content-Length:",temp) != 0 && strcmp("Content-Type:",temp) != 0   && strcmp("sec-ch-ua:",temp) != 0 && strcmp("sec-ch-ua-mobile:",temp) != 0 && strcmp("sec-ch-ua-platform:",temp) != 0 &&
+        strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0) 
+        {
+            if(strcmp("\r\n",temp) == 0)
+            {
+                free(temp);
+                return 1;    
+            }
+            else
+            {
+                free(temp);
+                return -1;
+            }
+        }
+        i++;
+        j = i;
+        while (str[i] && str[i] != '\n')
+            i++;
+        temp = ft_substr(str.data(),j,i );
+        if(strlen(temp) < 2 ||  temp[strlen(temp) - 1] != '\r')// && temp[strlen(temp) + 1] != '\n'))
+        {
+            free(temp);
+            return -1;
+        }
+        free(temp);
+        i++;
+    }
+
+
+
+    while (token[i] && token[i] != ' ')
+        i++;
+    
+    temp = ft_substr(token,j,i);
+     
+    if( strcmp("Host:",temp) != 0 && strcmp("User-Agent:",temp) != 0 && strcmp("Accept:",temp) != 0 && strcmp("Accept-Language:",temp) != 0 && strcmp("Accept-Encoding:",temp) != 0 && strcmp("Authorization:",temp) != 0 && strcmp("Cache-Control:",temp) != 0 && 
+    strcmp("Connection:",temp) != 0 && strcmp("Content-Length:",temp) != 0 && strcmp("Content-Type:",temp) != 0   && strcmp("sec-ch-ua:",temp) != 0 && strcmp("sec-ch-ua-mobile:",temp) != 0 && strcmp("sec-ch-ua-platform:",temp) != 0 &&
+    strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0) 
+    {
+        free(temp);
+        return -1;
+    }
+    free(temp);
+    
+    temp = ft_substr(token,i + 1,strlen(token - j));
+     
+    if(strlen(temp) == 0 || temp[strlen(temp) - 1] != '\r')
+    {
+        free(temp);
+        return -1;
+    }
+    free(temp);
+
+
+
+
+    boundary=--------------------------546396952315283955169235
+Content-Length: 276
+
+----------------------------546396952315283955169235
+Content-Disposition: form-data; name="name"
+
+test
+----------------------------546396952315283955169235
+Content-Disposition: form-data; name="address"
+
+capital
+----------------------------546396952315283955169235--
+
+
+HTTP/1.0 200 OK 
+Content-Type: text/plain 
+Transfer-Encoding: chunked
+\r\n
+
+5\r\n
+ahmed\r\n
+0\r\n
+\r\n
+
+
+ 

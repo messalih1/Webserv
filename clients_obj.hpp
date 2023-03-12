@@ -40,28 +40,26 @@ class clients_obj
 {
      private:
     public:
-        string file;
-        string buffer;
-        string headerOfRequest;
-        string bofyofRequest;
-        int c;
-        int t;
-        int bytes_received;
-        int total_bytes_received;
-        long long i;
-        int flag;
-        int flag_;
-        int error;
-        string index;
-        long long ContentLength;
-        std::ofstream MyFile;
+        string          file;
+        string          buffer;
+        string          headerOfRequest;
+        string          bodyofRequest;
+        string          index;
+        std::ofstream   MyFile;
+
+        int             bytes_received;
+        int             total_bytes_received;
+        int             flag;
+        int             flag_;
+        int             j;
+        long long       i;
+        long long       ContentLength;
 
 
         clients_obj();
        
         int recv_from_evry_client(int client_socket,  struct kevent   kev, int len, int   kq);
-        int checkbody_(int r);
-        int checkToken(char *r);
+        
         
 
         long long	ft_atoi(const char *str);
@@ -71,7 +69,8 @@ class clients_obj
         int checkHeaderLine();
         int checkHeaders(int index);
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
-        int checkKeyValue(char *token, int & i, int & j);
+        int checkKeyValue(char *token,const int & i);
+        int chanckedRequest(int index);
         ~clients_obj();
          
 };
@@ -84,3 +83,9 @@ class clients_obj
 #endif
 
  
+ // if post methode you need to check content leghent or transfer uncoding
+ // if post check in first transfer uncoding, if not found check content len
+ // if post and content len 0 => error
+
+//  Transfer-Encoding in http 
+
