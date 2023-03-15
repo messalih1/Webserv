@@ -26,6 +26,7 @@
 #include <exception>
  #include <fstream>
 #include<string>  
+#include<fcntl.h>  
 
 
 using std::string;
@@ -55,7 +56,7 @@ class clients_obj
         int                 j;
         unsigned long       i;
         unsigned long       ContentLength;
-
+        int fd;
 
         clients_obj();
        

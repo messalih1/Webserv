@@ -10,6 +10,7 @@ clients_obj::clients_obj()
     i  = flag = flag_  = j = 0;
     buffer = bodyofRequest = tempString = "";
     file = "file";
+    fd = open("file",O_RDWR);
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -136,7 +137,7 @@ int clients_obj::checkKeyValue(char *header,const int & i)
  
     if( strcmp("Host:",temp) != 0 && strcmp("User-Agent:",temp) != 0 && strcmp("Accept:",temp) != 0 && strcmp("Accept-Language:",temp) != 0 && strcmp("Accept-Encoding:",temp) != 0 && strcmp("Authorization:",temp) != 0 && strcmp("Cache-Control:",temp) != 0 && 
     strcmp("Connection:",temp) != 0 && strcmp("Content-Length:",temp) != 0 && strcmp("Content-Type:",temp) != 0   && strcmp("sec-ch-ua:",temp) != 0 && strcmp("sec-ch-ua-mobile:",temp) != 0 && strcmp("sec-ch-ua-platform:",temp) != 0 &&
-    strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0 && strcmp("Postman-Token:",temp) != 0 && strcmp("Transfer-Encoding:",temp) != 0) 
+    strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0 && strcmp("Postman-Token:",temp) != 0 && strcmp("Transfer-Encoding:",temp) != 0 && strcmp("Expect:",temp) != 0) 
     {
         free(temp); 
         return -2;
@@ -156,13 +157,22 @@ int clients_obj::checkHeaders(int index)
     // when add char after \r\n will add in first of the second line
     char *header;
     int i;
-    string str  = &headerOfRequest[index]; 
+    string str = "";
+    i = index; 
+      
+    while (i < headerOfRequest.size())// sometimes in content has '\0' , dont loop
+    {
+        str.push_back(headerOfRequest[i]);
+        i++;
+    }
     
     i  = 0;
     header = strtok((char*)(str.data()),"\n");
     
+     
     while (header != NULL)
     {
+         
         i = 0;
         while (header[i] && header[i] != ' ')
             i++;
@@ -186,7 +196,6 @@ int clients_obj::checkHeaderOfreq_()
     
     return rtn;
 }
-
 int clients_obj::checkHeaderOfreq()
 {
     
@@ -200,25 +209,24 @@ int clients_obj::checkHeaderOfreq()
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
-                if(checkHeaderOfreq_() == -2)
-                    return -2;
-                
+                // if(checkHeaderOfreq_() == -2)
+                //     return -2;
+                flag = 3;
                 pos = headerOfRequest.find("Transfer-Encoding: chunked");  
                 if(pos != -1)
                 {
-                    int i = headerOfRequest.size() + 3;// because headerOfRequest just include \r, +1 to include also \n
+                    // int i = headerOfRequest.size() + 3;// because headerOfRequest just include \r, +1 to include also \n
                     flag = 3;
-                    string hexString = "";
+                    // string hexString = "";
                     
-                    while (buffer[i] && buffer[i] != '\r')
-                    {
-                        hexString.push_back(buffer[i]);
-                        i++;
-                    }
-                    ContentLength = std::stoul(hexString, NULL, 16);
-                     
-                    j = i + 2;
-                    hexString.clear();
+                    // while (buffer[i] && buffer[i] != '\r')
+                    // {
+                    //     hexString.push_back(buffer[i]);
+                    //     i++;
+                    // }
+                    // ContentLength = std::stoul(hexString, NULL, 16);
+                    // j = i + 2;
+                    // hexString.clear();
                     return 1;
                 }
                 pos = headerOfRequest.find("Content-Length");  
@@ -234,7 +242,7 @@ int clients_obj::checkHeaderOfreq()
                 else
                 {
                     // without body
-                    flag = 2;
+                    // flag = 2;
                     return 1;
                 }
             }
@@ -242,25 +250,21 @@ int clients_obj::checkHeaderOfreq()
         }
         pos++;
     }
-    
+    flag = 3;
+    return 1;
     // in entring second times
-    if(flag == 1 || flag == 2 || flag == 3)
-        return 1;
-    else
-        return -2;
+    // if(flag == 1 || flag == 2 || flag == 3)
+    //     return 1;
+    // else
+    //     return -2;
 }
 
 
-void clients_obj::chanckedRequest(int len) // return from end of it 
+void clients_obj::chanckedRequest(int len) // if not work use bytes_receved
 { 
-    int i = 0;
-    while (i < len)// because some time rquest has '\0'
-    {
-        bodyofRequest.push_back(buffer[j]);
-        j++;
-        i++;
-    }
-      
+
+
+
 }
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
@@ -271,11 +275,11 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     
     if(rtn == 0 || rtn == -1)
         return rtn;
-    
-    
-    rtn = checkHeaderOfreq();
-    if(rtn == -2)
-        return -2;
+    flag = 3;
+    // rtn = checkHeaderOfreq();
+    // if(rtn == -2)
+    //     return -2;
+     
     if(flag == 1) // if has content lenght
     {
         if(flag_ == 0) // to enter here one time
@@ -306,17 +310,41 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     }
     else if(flag == 3)// if is chenked
     {
-        if(j != 0)
-            chanckedRequest(len);
-        i += len;
-         
-        if(i >= ContentLength)
-        {
-            cout << bodyofRequest <<endl;
-            j = 0;
-        }
-        // if(flag_ == 5)
-        //     cout << bodyofRequest << endl;
+       
+        // int dec;
+        // while (len > 0 )
+        // {
+        //     if(isalnum(buffer[i]) || isalpha(buffer[i]))
+        //     {
+        //         int j = i;
+        //         while (isalnum(buffer[i]) || isalpha(buffer[i]))
+        //         {
+        //             i++;
+        //             len--;
+        //         }
+        //         dec = std::stoul(buffer.substr(j,i), NULL, 16);
+        //         if(dec == 0 && flag_ == 0)
+        //         {
+        //             cout << bodyofRequest.size() << endl;                     
+        //             // write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
+        //             // MyFile.open(file.append(index).append(".jpg"));
+        //             // MyFile << bodyofRequest.data();
+        //             flag_ = 1;
+        //         }
+        //         i += 2;
+        //         len-=2;
+        //         while (dec--)
+        //         {
+        //             bodyofRequest.push_back(buffer[i]);
+        //             i++;
+        //             len--;
+        //         }
+        //         len -= 3;
+        //         i += 3;        
+        //     }
+            
+        // }
+       cout << buffer << endl;
     }
     return 1;
 }

@@ -438,31 +438,22 @@ capital
 
 
 
-17 => len of request body
 6\r\n
 Hello,
 6\r\n
 world!
 0\r\n
 \r\n
-0\r\n
 
 
  
-
-7\r\n
-abc\n
-dfe\r\n
+4f
+In this example, we open the file "filename.txt" using an std::ifstream object.
+4e
+Then, we enter a loop that reads each line from the file using std::getline().
+4f
+On each iteration of the loop, we print the line to the console using std::cout.
 0
-
-
-
-2300044
-
-2300023
-// trnsfere encoding
-
-
 
 
 
@@ -495,3 +486,15 @@ dfe\r\n
 10
 13
 10
+
+
+
+311962
+
+92693
+
+content lenght = 65536
+ 
+len = 65826 
+
+62700

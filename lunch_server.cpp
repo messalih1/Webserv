@@ -83,8 +83,8 @@ lunch_server::lunch_server()
                 else if(rtnFromfnc == -2)
                 {
                     cout << "error in the request\n";
-                    EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                    kevent(kq, &kev, 1, NULL, 0, NULL); 
+                    // EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    // kevent(kq, &kev, 1, NULL, 0, NULL); 
                     // Check the request method
                     // if (request.method() != boost::beast::http::verb::get) {
                     // // Respond with "Method not allowed" error
