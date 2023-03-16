@@ -10,7 +10,7 @@ clients_obj::clients_obj()
     i  = flag = flag_  = j = 0;
     buffer = bodyofRequest = tempString = "";
     file = "file";
-    fd = open("file",O_RDWR);
+    fd = open("1.mp4",O_RDWR);
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -196,37 +196,31 @@ int clients_obj::checkHeaderOfreq_()
     
     return rtn;
 }
-int clients_obj::checkHeaderOfreq()
+int clients_obj::checkHeaderOfreq(int len)
 {
-    
+     
     int pos = 0;
-    
+     
     while (buffer[pos] && flag == 0)// for entring one time
     {
+            
         if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
         {
             pos += 2;
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
+                
+                 
                 // if(checkHeaderOfreq_() == -2)
                 //     return -2;
-                flag = 3;
+              
                 pos = headerOfRequest.find("Transfer-Encoding: chunked");  
+                
                 if(pos != -1)
                 {
-                    // int i = headerOfRequest.size() + 3;// because headerOfRequest just include \r, +1 to include also \n
-                    flag = 3;
-                    // string hexString = "";
-                    
-                    // while (buffer[i] && buffer[i] != '\r')
-                    // {
-                    //     hexString.push_back(buffer[i]);
-                    //     i++;
-                    // }
-                    // ContentLength = std::stoul(hexString, NULL, 16);
-                    // j = i + 2;
-                    // hexString.clear();
+                    flag = 3;    
+                    i = headerOfRequest.size() + 3;
                     return 1;
                 }
                 pos = headerOfRequest.find("Content-Length");  
@@ -249,8 +243,8 @@ int clients_obj::checkHeaderOfreq()
             --pos;
         }
         pos++;
+ 
     }
-    flag = 3;
     return 1;
     // in entring second times
     // if(flag == 1 || flag == 2 || flag == 3)
@@ -272,14 +266,13 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     int rtn;
 
     rtn = pushToBuffer(client_socket,  kev,len, kq);
-    
     if(rtn == 0 || rtn == -1)
         return rtn;
-    flag = 3;
-    // rtn = checkHeaderOfreq();
+    rtn = checkHeaderOfreq(len);
+     
     // if(rtn == -2)
     //     return -2;
-     
+    flag = 3;
     if(flag == 1) // if has content lenght
     {
         if(flag_ == 0) // to enter here one time
@@ -309,43 +302,47 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
          // without budy
     }
     else if(flag == 3)// if is chenked
-    {
-       
-        // int dec;
-        // while (len > 0 )
-        // {
-        //     if(isalnum(buffer[i]) || isalpha(buffer[i]))
-        //     {
-        //         int j = i;
-        //         while (isalnum(buffer[i]) || isalpha(buffer[i]))
-        //         {
-        //             i++;
-        //             len--;
-        //         }
-        //         dec = std::stoul(buffer.substr(j,i), NULL, 16);
-        //         if(dec == 0 && flag_ == 0)
-        //         {
-        //             cout << bodyofRequest.size() << endl;                     
-        //             // write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
-        //             // MyFile.open(file.append(index).append(".jpg"));
-        //             // MyFile << bodyofRequest.data();
-        //             flag_ = 1;
-        //         }
-        //         i += 2;
-        //         len-=2;
-        //         while (dec--)
-        //         {
-        //             bodyofRequest.push_back(buffer[i]);
-        //             i++;
-        //             len--;
-        //         }
-        //         len -= 3;
-        //         i += 3;        
-        //     }
+    { 
+         
+        int dec;
+         int  j = 0;
+         
+            while (j < len)
+            {
+                if(isalnum(buffer[i]) || isalpha(buffer[i]))
+                {
+                    int k = i;
+                    while (isalnum(buffer[i]) || isalpha(buffer[i]))
+                    {
+                        i++;
+                        j++;
+                    }
+                    dec = std::stoul(buffer.substr(k,i), NULL, 16);
+
+                    i+=2;
+                    j+=2;
             
-        // }
-       cout << buffer << endl;
-    }
+                    if(dec == 0 && flag_ == 0)
+                    {
+                        write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());                     
+                        flag_ = 10;
+                        
+                    }
+                    
+                    while (dec--)
+                    {
+                        bodyofRequest.push_back(buffer[i]);
+                        i++;
+                        j++;
+                        
+                    }
+                    i += 2; 
+                    j+=2;
+                }
+            }
+ 
+
+        }
     return 1;
 }
 

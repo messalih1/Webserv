@@ -66,7 +66,7 @@ class clients_obj
 
         long long	ft_atoi(const char *str);
         
-        int checkHeaderOfreq();
+        int checkHeaderOfreq(int len);
         int checkHeaderOfreq_();
         int checkHeaderLine();
         int checkHeaders(int index);
