@@ -10,7 +10,7 @@ clients_obj::clients_obj()
     i  = flag = flag_  = j = 0;
     buffer = bodyofRequest = tempString = "";
     file = "file";
-    fd = open("1.mp4",O_RDWR);
+    fd = open("1.jpg",O_RDWR | O_CREAT, 0777);
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -198,7 +198,6 @@ int clients_obj::checkHeaderOfreq_()
 }
 int clients_obj::checkHeaderOfreq(int len)
 {
-     
     int pos = 0;
      
     while (buffer[pos] && flag == 0)// for entring one time
@@ -211,7 +210,7 @@ int clients_obj::checkHeaderOfreq(int len)
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
                 
-                 
+                buffer.erase(0, pos + 2);
                 // if(checkHeaderOfreq_() == -2)
                 //     return -2;
               
@@ -269,7 +268,6 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     if(rtn == 0 || rtn == -1)
         return rtn;
     rtn = checkHeaderOfreq(len);
-     
     // if(rtn == -2)
     //     return -2;
     flag = 3;
@@ -303,45 +301,47 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     }
     else if(flag == 3)// if is chenked
     { 
-         
         int dec;
          int  j = 0;
-         
-            while (j < len)
+       
+            while (j < buffer.size())
             {
-                if(isalnum(buffer[i]) || isalpha(buffer[i]))
+                
+                if(isalnum(buffer[j]) || isalpha(buffer[j]))
                 {
-                    int k = i;
-                    while (isalnum(buffer[i]) || isalpha(buffer[i]))
+                    int k = j;
+                    while (isalnum(buffer[j]) || isalpha(buffer[j]))
                     {
                         i++;
                         j++;
                     }
-                    dec = std::stoul(buffer.substr(k,i), NULL, 16);
-
+                  
+                    dec = std::stoul(buffer.substr(k,j), NULL, 16);
                     i+=2;
                     j+=2;
             
                     if(dec == 0 && flag_ == 0)
                     {
-                        write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());                     
+                        write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());                    
                         flag_ = 10;
                         
                     }
-                    
+ 
                     while (dec--)
                     {
-                        bodyofRequest.push_back(buffer[i]);
+                        bodyofRequest.push_back(buffer[j]);
                         i++;
                         j++;
                         
                     }
+ 
                     i += 2; 
                     j+=2;
                 }
-            }
  
-
+            }
+            buffer.clear();
+ 
         }
     return 1;
 }
