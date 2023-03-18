@@ -10,7 +10,7 @@ clients_obj::clients_obj()
     i  = flag = flag_  = j = 0;
     buffer = bodyofRequest = tempString = "";
     file = "file";
-    fd = open("1.jpg",O_RDWR | O_CREAT, 0777);
+    // fd = open("1.jpg",O_RDWR | O_CREAT, 0777);
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -188,7 +188,6 @@ int clients_obj::checkHeaderOfreq_()
 {
     int rtn = checkHeaderLine();
 
-
     if(rtn == -1)
         return -1;
     
@@ -199,10 +198,9 @@ int clients_obj::checkHeaderOfreq_()
 int clients_obj::checkHeaderOfreq(int len)
 {
     int pos = 0;
-     
+    
     while (buffer[pos] && flag == 0)// for entring one time
     {
-            
         if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
         {
             pos += 2;
@@ -210,16 +208,15 @@ int clients_obj::checkHeaderOfreq(int len)
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
                 
-                buffer.erase(0, pos + 2);
-                // if(checkHeaderOfreq_() == -2)
-                //     return -2;
-              
-                pos = headerOfRequest.find("Transfer-Encoding: chunked");  
                 
-                if(pos != -1)
+                if(checkHeaderOfreq_() == -2)
+                    return -2;
+
+                i = headerOfRequest.find("Transfer-Encoding: chunked");  
+                if(i != -1)
                 {
-                    flag = 3;    
-                    i = headerOfRequest.size() + 3;
+                    buffer.erase(buffer.begin(),buffer.begin() + pos + 2);
+                    flag = 3;
                     return 1;
                 }
                 pos = headerOfRequest.find("Content-Length");  
@@ -235,42 +232,42 @@ int clients_obj::checkHeaderOfreq(int len)
                 else
                 {
                     // without body
-                    // flag = 2;
+                    flag = 2;
                     return 1;
                 }
             }
             --pos;
         }
         pos++;
- 
     }
-    return 1;
+    
     // in entring second times
-    // if(flag == 1 || flag == 2 || flag == 3)
-    //     return 1;
-    // else
-    //     return -2;
-}
-
-
-void clients_obj::chanckedRequest(int len) // if not work use bytes_receved
-{ 
-
+    if(flag == 1 || flag == 2 || flag == 3)
+        return 1;
+    else
+        return -2;
 
 
 }
+
+ 
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
     int rtn;
 
     rtn = pushToBuffer(client_socket,  kev,len, kq);
+    // int fd = open("1",O_CREAT  | O_RDWR , 0777 | O_TRUNC);
+
+    // write(fd,(void*)(buffer.data()),buffer.size());
+    // buffer.clear();
+    // return 1;
     if(rtn == 0 || rtn == -1)
         return rtn;
+    
     rtn = checkHeaderOfreq(len);
-    // if(rtn == -2)
-    //     return -2;
-    flag = 3;
+    if(rtn == -2)
+        return -2;
     if(flag == 1) // if has content lenght
     {
         if(flag_ == 0) // to enter here one time
@@ -284,13 +281,17 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
             rtn = headerOfRequest.find("pdf");
             if(rtn != -1)
                 MyFile.open("file.pdf");
+            rtn = headerOfRequest.find("application");
+            if(rtn != -1)
+                MyFile.open("file.txt");// should handle any text file
+            rtn = 1;
             flag_ = 1;
         }
         i += len;
         if(i >= ContentLength )// finish recivng
         {
             MyFile << buffer.substr(headerOfRequest.size() + 2,ContentLength);
-            // cout << "recive from client: "  << client_socket << endl;
+
             MyFile.close();
         }
     }
@@ -299,50 +300,52 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
         // check header line and headers
          // without budy
     }
-    else if(flag == 3)// if is chenked
+    else if(flag == 3)
     { 
         int dec;
-         int  j = 0;
-       
-            while (j < buffer.size())
+        i = 0;
+        while (i < buffer.size())
+        {
+            if(isalnum(buffer[i]) || isalpha(buffer[i]))
             {
-                
-                if(isalnum(buffer[j]) || isalpha(buffer[j]))
+                int k = i;
+                while (isalnum(buffer[i]) || isalpha(buffer[i]))
+                    i++;
+                dec = std::stoul(buffer.substr(k,i), NULL, 16);
+
+                i+=2;
+        
+                if(dec == 0 && flag_ == 0)
                 {
-                    int k = j;
-                    while (isalnum(buffer[j]) || isalpha(buffer[j]))
-                    {
-                        i++;
-                        j++;
-                    }
-                  
-                    dec = std::stoul(buffer.substr(k,j), NULL, 16);
-                    i+=2;
-                    j+=2;
-            
-                    if(dec == 0 && flag_ == 0)
-                    {
-                        write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());                    
-                        flag_ = 10;
-                        
-                    }
- 
-                    while (dec--)
-                    {
-                        bodyofRequest.push_back(buffer[j]);
-                        i++;
-                        j++;
-                        
-                    }
- 
-                    i += 2; 
-                    j+=2;
+                    rtn = headerOfRequest.find("mp4");
+                    if(rtn != -1)
+                        MyFile.open(file.append(index).append(".mp4"));
+                    rtn = headerOfRequest.find("jpeg");
+                    if(rtn != -1)
+                        MyFile.open("file.jpeg");
+                    rtn = headerOfRequest.find("pdf");
+                    if(rtn != -1)
+                        MyFile.open("file.pdf");
+                    rtn = headerOfRequest.find("application");
+                    if(rtn != -1)
+                        MyFile.open("file.txt");// should handle any text file
+                    rtn = 1;
+                    MyFile <<  bodyofRequest;                     
+                    flag_ = 10;
                 }
- 
+                
+                while (dec--)
+                {
+                    bodyofRequest.push_back(buffer[i]);
+                    i++;
+                }
+                i += 2; 
             }
-            buffer.clear();
- 
         }
+        // buffer.erase(buffer.begin(),buffer.end());
+        buffer.clear();// leaks ?
+    }
+    
     return 1;
 }
 
