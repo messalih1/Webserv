@@ -67,7 +67,8 @@
         "vector": "cpp",
         "__tree": "cpp",
         "map": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "tempcode": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

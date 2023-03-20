@@ -1,10 +1,32 @@
-POST / HTTP/1.1
-Postman-Token: b00bb029-65d0-4c1b-8f04-e78edc895cdf
-Content-Type: multipart/form-data; boundary=--------------------------307628858845593124530663
-Content-Length: 166
+// first shure that all data is rescived
 
-----------------------------307628858845593124530663
-Content-Disposition: form-data; name="name"
+// append -- to boundy
 
-essalih
-----------------------------307628858845593124530663--
+
+// split by boundry
+
+int fd = open("file.txt",O_RDWR | O_CREAT, 0777 | O_TRUNC);
+write(fd,(void*)(buffer.data()),buffer.size());
+
+
+// split by boundry and take 
+
+----------------------------615270213988950631326502
+Content-Disposition: form-data; name="file1"; filename="dddok"
+Content-Type: application/octet-stream
+
+ahmed yassine
+mustapha 
+----------------------------615270213988950631326502
+
+
+
+=>
+Content-Disposition: form-data; name="file1"; filename="dddok"
+Content-Type: application/octet-stream
+
+ahmed yassine
+mustapha 
+
+
+and search filename

@@ -1,17 +1,10 @@
-#include "clients_obj.hpp"
-#include <fstream>
+#include "parssingOfHeader.hpp"
+#include "../clients_obj.hpp"
 
 
-// in evry default construct cretae empty string and when you want to fill add a variable to continue
 
-clients_obj::clients_obj()
+parssingOfHeader::parssingOfHeader(/* args */)
 {
-    total_bytes_received  = 0;
-    i  = flag = flag_  = j = 0;
-    buffer = bodyofRequest = boundary = tempString = "";
-  
-    
-    // fd = open("1",O_RDWR | O_CREAT, 0777);
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -38,7 +31,7 @@ char *ft_substr(char const *s, unsigned int start, size_t len)
 	return (str);
 }
 
-long long	clients_obj::ft_atoi(const char *str)
+long long	parssingOfHeader::ft_atoi(const char *str)
 {
 	long long	res;
 	long long	negative;
@@ -60,30 +53,7 @@ long long	clients_obj::ft_atoi(const char *str)
 	return (res * negative);
 }
 
-int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq)
-{
-     
-    index = std::to_string(client_socket);
-    
-    char data[len];
-    bzero(data, len);
-    bytes_received = recv(client_socket, &data, len, 0);
-
-    if(bytes_received == -1)
-        return -1;
-    if(bytes_received == 0)
-        return 0;
-    int j = 0; 
-    
-    while (j < bytes_received)
-    {
-        buffer.push_back(data[j]);
-        j++;
-    }
-    return 1;
-}
-
-int clients_obj::checkHeaderLine()
+int parssingOfHeader::checkHeaderLine()
 {
     int i = 0;
     int j = 0;
@@ -130,7 +100,7 @@ int clients_obj::checkHeaderLine()
     return i;
 }
   
-int clients_obj::checkKeyValue(char *header,const int & i)
+int parssingOfHeader::checkKeyValue(char *header,const int & i)
 {
     char *temp;
     
@@ -153,7 +123,7 @@ int clients_obj::checkKeyValue(char *header,const int & i)
     return 1;
 }
 
-int clients_obj::checkHeaders(int index)
+int parssingOfHeader::checkHeaders(int index)
 {
     // when add char after \r\n will add in first of the second line
     char *header;
@@ -185,7 +155,7 @@ int clients_obj::checkHeaders(int index)
 }
 
 
-int clients_obj::checkHeaderOfreq_()
+int parssingOfHeader::checkHeaderOfreq_()
 {
     int rtn = checkHeaderLine();
 
@@ -196,39 +166,7 @@ int clients_obj::checkHeaderOfreq_()
     
     return rtn;
 }
-
-
-void clients_obj::putDataTofile(string data)
-{
-    int pos = data.find("filename=\"");
-    if(pos != -1)
-    {
-        int t = pos + 10;
-        while (data[t] != '"')
-            t++;
-        file =  data.substr(pos + 10,t - (pos + 10));
-        MyFile.open(file);
-        pos = data.find("Content-Type:");
-        while (data[pos] != '\r' && data[pos + 1] != '\n')
-            pos++;
-        pos += 4;
-        while (pos < data.size())
-        {
-            bodyofRequest.push_back(data[pos]);
-            pos++;
-        }
-        
-        MyFile << bodyofRequest;
-        file.clear();
-        bodyofRequest.clear();
-        MyFile.close();
-    }
-    
-
-}
-
-
-int clients_obj::checkHeaderOfreq(int len)
+int parssingOfHeader::checkHeaderOfreq(int len)
 {
     int pos = 0;
     
@@ -254,22 +192,6 @@ int clients_obj::checkHeaderOfreq(int len)
                 pos = headerOfRequest.find("Content-Length");  
                 if(pos != -1)
                 {
-                    j = headerOfRequest.find("boundary");
-                    if(j != -1)
-                    {
-                        flag = 4;
-                        ContentLength = ft_atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
-                        i = headerOfRequest.size() + 3;// after herder
-                        bytes_received -= i;
-                        tmp = j + 9;
-                        char *temp = (char*)buffer.data() + tmp;// because string() dont handle '\r'
-                        tmp = 0;
-                        while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
-                            tmp++;
-                        boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
-                        
-                         return 1;
-                    }
                     ContentLength = ft_atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
                     if(ContentLength == 0)
                         return -2;
@@ -288,71 +210,18 @@ int clients_obj::checkHeaderOfreq(int len)
         }
         pos++;
     }
-    
     // in entring second times
-    if(flag == 1 || flag == 2 || flag == 3 || flag == 4)
+    if(flag == 1 || flag == 2 || flag == 3)
         return 1;
     else
         return -2;
-
-
-}
-
- 
-
-int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
-{
-    int rtn;
-
-    rtn = pushToBuffer(client_socket,  kev,len, kq);
-     
-    if(rtn == 0 || rtn == -1)
-        return rtn;
-    
- 
-    rtn = checkHeaderOfreq(len);
-    if(rtn == -2)
-        return -2;
-    if(flag == 4)
-    {
-        total_bytes_received += bytes_received;
-        if(total_bytes_received >= ContentLength)
-        { 
-            size_t start_idx = i;
-            string separator = boundary;
-            vector<string> substrings; // clear ?
-
-            while (true) {
-   
-                size_t end_idx = buffer.find(separator, start_idx);
-                if (end_idx == string::npos) {
-         
-                    substrings.push_back(buffer.substr(start_idx));
-                    break;
-                }
-  
-                substrings.push_back(buffer.substr(start_idx, end_idx - start_idx));
- 
-                start_idx = end_idx + separator.length();
-            }
-            
-            substrings.erase(substrings.end() - 1);// remove "--" after last boundry
-            string s;
-            vector<string>::iterator it = substrings.begin();
-            while (it != substrings.end())
-            { 
-                if(!it->empty())
-                    putDataTofile(*it);
-                it++;
-            }
-        }       
-    }
-    return 1;
 }
 
 
 
-clients_obj::~clients_obj()
+
+
+parssingOfHeader::~parssingOfHeader()
 {
 }
 

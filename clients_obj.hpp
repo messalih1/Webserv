@@ -46,6 +46,7 @@ class clients_obj
         string              headerOfRequest;
         string              bodyofRequest;
         string              tempString;
+        string              boundary;
         string              index;
         std::ofstream       MyFile;
 
@@ -53,6 +54,7 @@ class clients_obj
         int                 total_bytes_received;
         int                 flag;
         int                 flag_;
+        int                 tmp;
         int                 j;
         unsigned long       i;
         unsigned long       ContentLength;
@@ -73,6 +75,8 @@ class clients_obj
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
         int checkKeyValue(char *token,const int & i);
         void chanckedRequest(int len);
+        void putDataTofile(string data);
+
         ~clients_obj();
          
 };
