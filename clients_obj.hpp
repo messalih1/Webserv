@@ -55,10 +55,10 @@ class clients_obj
         int                 flag;
         int                 flag_;
         int                 tmp;
+        int                 fd;
         int                 j;
         unsigned long       i;
         unsigned long       ContentLength;
-        int fd;
 
         clients_obj();
        
@@ -74,9 +74,10 @@ class clients_obj
         int checkHeaders(int index);
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
         int checkKeyValue(char *token,const int & i);
-        void chanckedRequest(int len);
         void putDataTofile(string data);
-
+        void handling_chunked_data();
+        void handling_form_data();
+        void handle_post(int len);
         ~clients_obj();
          
 };

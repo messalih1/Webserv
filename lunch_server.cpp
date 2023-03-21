@@ -53,7 +53,6 @@ lunch_server::lunch_server()
             {
                 if ((fd_new_client = accept(fd_server, reinterpret_cast<struct sockaddr *> (&serv_struct), &len) ) < 0 )// will accept it
                     throw throwException("error in accept()");
-                
                 // Add the client socket to the kqueue
                 EV_SET(&kev, fd_new_client, EVFILT_READ, EV_ADD, 0, 0, NULL);// prepar new connection , new clinet for incomming data
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) == -1) // add new connection to kevents, 
@@ -68,7 +67,6 @@ lunch_server::lunch_server()
             {
                 int client_socket = clients_events[i].ident;
                 int rtnFromfnc = map_objs[client_socket].recv_from_evry_client(client_socket,kev,clients_events[i].data,kq);
-            
                 if(rtnFromfnc == -1)
                     throw throwException("error in rev()");
                 else if(rtnFromfnc == 0)// ||rtnFromfnc == -2 )

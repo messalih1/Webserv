@@ -1,5 +1,5 @@
 #include "clients_obj.hpp"
-#include <fstream>
+
 
 
 // in evry default construct cretae empty string and when you want to fill add a variable to continue
@@ -9,9 +9,7 @@ clients_obj::clients_obj()
     total_bytes_received  = 0;
     i  = flag = flag_  = j = 0;
     buffer = bodyofRequest = boundary = tempString = "";
-  
-    
-    // fd = open("1",O_RDWR | O_CREAT, 0777);
+    tmp = 0;
 }
 
 char *ft_substr(char const *s, unsigned int start, size_t len)
@@ -62,7 +60,6 @@ long long	clients_obj::ft_atoi(const char *str)
 
 int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
-     
     index = std::to_string(client_socket);
     
     char data[len];
@@ -135,7 +132,7 @@ int clients_obj::checkKeyValue(char *header,const int & i)
     char *temp;
     
     temp = ft_substr(header,0,i);
- 
+    
     if( strcmp("Host:",temp) != 0 && strcmp("User-Agent:",temp) != 0 && strcmp("Accept:",temp) != 0 && strcmp("Accept-Language:",temp) != 0 && strcmp("Accept-Encoding:",temp) != 0 && strcmp("Authorization:",temp) != 0 && strcmp("Cache-Control:",temp) != 0 && 
     strcmp("Connection:",temp) != 0 && strcmp("Content-Length:",temp) != 0 && strcmp("Content-Type:",temp) != 0   && strcmp("sec-ch-ua:",temp) != 0 && strcmp("sec-ch-ua-mobile:",temp) != 0 && strcmp("sec-ch-ua-platform:",temp) != 0 &&
     strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0 && strcmp("Postman-Token:",temp) != 0 && strcmp("Transfer-Encoding:",temp) != 0 && strcmp("Expect:",temp) != 0) 
@@ -173,7 +170,6 @@ int clients_obj::checkHeaders(int index)
      
     while (header != NULL)
     {
-         
         i = 0;
         while (header[i] && header[i] != ' ')
             i++;
@@ -198,55 +194,24 @@ int clients_obj::checkHeaderOfreq_()
 }
 
 
-void clients_obj::putDataTofile(string data)
-{
-    int pos = data.find("filename=\"");
-    if(pos != -1)
-    {
-        int t = pos + 10;
-        while (data[t] != '"')
-            t++;
-        file =  data.substr(pos + 10,t - (pos + 10));
-        MyFile.open(file);
-        pos = data.find("Content-Type:");
-        while (data[pos] != '\r' && data[pos + 1] != '\n')
-            pos++;
-        pos += 4;
-        while (pos < data.size())
-        {
-            bodyofRequest.push_back(data[pos]);
-            pos++;
-        }
-        
-        MyFile << bodyofRequest;
-        file.clear();
-        bodyofRequest.clear();
-        MyFile.close();
-    }
-    
-
-}
-
-
 int clients_obj::checkHeaderOfreq(int len)
 {
     int pos = 0;
     
     while (buffer[pos] && flag == 0)// for entring one time
-    {
+    { 
         if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
         {
             pos += 2;
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
-                
                 if(checkHeaderOfreq_() == -2)
                     return -2;
-
-                i = headerOfRequest.find("Transfer-Encoding: chunked");  
+                
+                i = headerOfRequest.find("Transfer-Encoding: chunked");   // find way to check if boundry
                 if(i != -1)
-                {
+                { 
                     buffer.erase(buffer.begin(),buffer.begin() + pos + 2);
                     flag = 3;
                     return 1;
@@ -259,6 +224,8 @@ int clients_obj::checkHeaderOfreq(int len)
                     {
                         flag = 4;
                         ContentLength = ft_atoi(headerOfRequest.substr(pos + 16,headerOfRequest.size()).c_str());
+                        if(ContentLength == 0)
+                            return -2;
                         i = headerOfRequest.size() + 3;// after herder
                         bytes_received -= i;
                         tmp = j + 9;
@@ -288,17 +255,176 @@ int clients_obj::checkHeaderOfreq(int len)
         }
         pos++;
     }
-    
     // in entring second times
     if(flag == 1 || flag == 2 || flag == 3 || flag == 4)
         return 1;
     else
         return -2;
+}
+ 
+// how to it can check if it is a duplicate request
 
 
+void  clients_obj::handling_chunked_data()
+{
+    int dec,rtn;
+    int i = 0;
+    tmp++;
+    index = std::to_string(tmp);
+    while (i < buffer.size())
+    {
+        if(isalnum(buffer[i]) || isalpha(buffer[i]))
+        {
+            int k = i;
+            while (isalnum(buffer[i]) || isalpha(buffer[i]))
+                i++;
+            
+            dec = std::stoul(buffer.substr(k,i), NULL, 16);
+            i+=2;
+            if(dec == 0 && flag_ == 0)
+            {
+                dec = headerOfRequest.find("boundary");
+                if(dec != -1)
+                {
+                    i = 0;
+                    buffer = bodyofRequest;
+                    flag_ = 5;
+                    handling_form_data();
+                    return ;
+                }
+                rtn = headerOfRequest.find("mp4");
+                if(rtn != -1)
+                    fd = open((char*)(file.append(index).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
+                rtn = headerOfRequest.find("jpg");
+                if(rtn != -1)
+                    fd = open((char*)(file.append(index).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
+
+                rtn = headerOfRequest.find("pdf");
+                if(rtn != -1)
+                    fd = open((char*)(file.append(index).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
+                rtn = headerOfRequest.find("text/plain");
+                 
+                if(rtn != -1)
+                    fd = open((char*)(file.append(index).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
+                 
+                write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
+                flag_ = 10;
+            }
+            while (dec--)
+            {
+                bodyofRequest.push_back(buffer[i]);
+                i++;
+            }
+            i += 2; 
+        }
+    }
+    // buffer.erase(buffer.begin(),buffer.end());
+    buffer.clear();
 }
 
+void clients_obj::putDataTofile(string data)
+{
+    int pos = data.find("filename=\"");
  
+    if(pos != -1)
+    {
+        int t = pos + 10;
+        while (data[t] != '"')
+            t++;
+        file =  data.substr(pos + 10,t - (pos + 10));
+        MyFile.open(file);
+        pos = data.find("Content-Type:");
+        while (data[pos] != '\r' && data[pos + 1] != '\n')
+            pos++;
+        pos += 4;
+        while (pos < data.size())
+        {
+            bodyofRequest.push_back(data[pos]);
+            pos++;
+        }
+        
+        MyFile << bodyofRequest;
+        file.clear();
+        bodyofRequest.clear();
+        MyFile.close();
+    }
+}
+
+void clients_obj::handling_form_data()
+{
+    if(flag_ == 5)
+    {
+        j = headerOfRequest.find("boundary");
+        tmp = j + 9;
+       
+        char *temp = (char*)headerOfRequest.data() + tmp;// because string() dont handle '\r'
+        tmp = 0;
+        while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
+            tmp++;
+        boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
+         
+        total_bytes_received = ContentLength;
+        i = 0;
+        bodyofRequest.clear();
+    }
+ 
+    else
+        total_bytes_received += bytes_received;
+    if(total_bytes_received >= ContentLength)
+    { 
+        
+        size_t start_idx = i;
+        string separator = boundary;
+        vector<string> substrings; // clear ?
+
+        while (true) 
+        {
+            size_t end_idx = buffer.find(separator, start_idx);
+            if (end_idx == string::npos) 
+            {
+                substrings.push_back(buffer.substr(start_idx));
+                break;
+            }
+
+            substrings.push_back(buffer.substr(start_idx, end_idx - start_idx));
+            start_idx = end_idx + separator.length();
+        }
+        substrings.erase(substrings.end() - 1);// remove "--" after last boundry
+        string s;
+        vector<string>::iterator it = substrings.begin();
+        while (it != substrings.end())
+        { 
+            if(!it->empty())
+                putDataTofile(*it);
+            it++;
+        }
+    }
+}
+
+void clients_obj::handle_post(int len)
+{
+    int rtn;
+    if(flag_ == 0) // to enter here one time
+    {
+        rtn = headerOfRequest.find("mp4");
+        if(rtn != -1)
+            MyFile.open(file.append(index).append(".mp4"));
+        rtn = headerOfRequest.find("jpeg");
+        if(rtn != -1)
+            MyFile.open("file.jpeg");
+        rtn = headerOfRequest.find("pdf");
+        if(rtn != -1)
+            MyFile.open("file.pdf");
+        flag_ = 1;
+    }
+    i += len;
+    if(i >= ContentLength )// finish recivng
+    {
+        MyFile << buffer.substr(headerOfRequest.size() + 2,ContentLength);
+        // cout << "recive from client: "  << client_socket << endl;
+        MyFile.close();
+    }
+}
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
@@ -308,45 +434,22 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
      
     if(rtn == 0 || rtn == -1)
         return rtn;
-    
- 
     rtn = checkHeaderOfreq(len);
     if(rtn == -2)
         return -2;
-    if(flag == 4)
+    if(flag == 1) // if has content lenght
+        handle_post(len);
+    else if(flag == 2)
     {
-        total_bytes_received += bytes_received;
-        if(total_bytes_received >= ContentLength)
-        { 
-            size_t start_idx = i;
-            string separator = boundary;
-            vector<string> substrings; // clear ?
-
-            while (true) {
-   
-                size_t end_idx = buffer.find(separator, start_idx);
-                if (end_idx == string::npos) {
-         
-                    substrings.push_back(buffer.substr(start_idx));
-                    break;
-                }
-  
-                substrings.push_back(buffer.substr(start_idx, end_idx - start_idx));
- 
-                start_idx = end_idx + separator.length();
-            }
-            
-            substrings.erase(substrings.end() - 1);// remove "--" after last boundry
-            string s;
-            vector<string>::iterator it = substrings.begin();
-            while (it != substrings.end())
-            { 
-                if(!it->empty())
-                    putDataTofile(*it);
-                it++;
-            }
-        }       
+        // check header line and headers
+         // without budy
     }
+    if(flag == 3)
+        handling_chunked_data();
+    if(flag == 4)
+        handling_form_data();
+    
+        
     return 1;
 }
 
