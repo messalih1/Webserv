@@ -8,32 +8,9 @@ clients_obj::clients_obj()
 {
     total_bytes_received  = 0;
     i  = flag = flag_  = j = 0;
+    tmp = 0;
     buffer = bodyofRequest = boundary = tempString = "";
     tmp = 0;
-}
-
-char *ft_substr(char const *s, unsigned int start, size_t len)
-{
-	size_t	i;
-	size_t	j;
-	char	*str;
-
-	str = (char*)malloc(sizeof(*s) * (len - start + 1));
-	if (!str)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (s[i])
-	{
-		if (i >= start && j < len - start)
-		{
-			str[j] = s[i];
-			j++;
-		}
-		i++;
-	}
-	str[j] = 0;
-	return (str);
 }
 
 long long	clients_obj::ft_atoi(const char *str)
@@ -57,10 +34,34 @@ long long	clients_obj::ft_atoi(const char *str)
 	}
 	return (res * negative);
 }
+  
+char * clients_obj::ft_substr(char const *s, unsigned int start, size_t len)
+{
+	size_t	i;
+	size_t	j;
+	char	*str;
 
+	str = (char*)malloc(sizeof(*s) * (len - start + 1));
+	if (!str)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (s[i])
+	{
+		if (i >= start && j < len - start)
+		{
+			str[j] = s[i];
+			j++;
+		}
+		i++;
+	}
+	str[j] = 0;
+	return (str);
+}  
+ 
 int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
-    index = std::to_string(client_socket);
+    
     
     char data[len];
     bzero(data, len);
@@ -80,118 +81,7 @@ int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, co
     return 1;
 }
 
-int clients_obj::checkHeaderLine()
-{
-    int i = 0;
-    int j = 0;
-    char *temp;
-    
-    j = i;
-    while (headerOfRequest[i] && headerOfRequest[i] != ' ')
-        i++;
-    
-    temp = ft_substr(headerOfRequest.data(),j,i);
 
-    if( strcmp(temp,"GET") != 0 && strcmp(temp,"POST") != 0 && strcmp(temp,"DELETE") != 0)
-    {
-        free(temp);
-        return -1;
-    }
-    free(temp);
-
-    i++;
-    j = i;
-    while (headerOfRequest[i] && headerOfRequest[i] != ' ')
-        i++;
-    temp = ft_substr(headerOfRequest.data(),j,i);
-    if(temp[0] != '/')
-    {
-        free(temp);
-        return -1;
-    }
-    free(temp);
-
-    i++;
-    j = i;
-    while (headerOfRequest[i] && headerOfRequest[i] != '\r' && headerOfRequest[i + 1] != '\n' )
-        i++;
-    temp = ft_substr(headerOfRequest.data(),j,i); 
-     
-    if( strcmp(temp,"HTTP/1.1") != 0 )
-    {
-        free(temp);
-        return -1;
-    }
-    free(temp);
-    i+=2;
-    return i;
-}
-  
-int clients_obj::checkKeyValue(char *header,const int & i)
-{
-    char *temp;
-    
-    temp = ft_substr(header,0,i);
-    
-    if( strcmp("Host:",temp) != 0 && strcmp("User-Agent:",temp) != 0 && strcmp("Accept:",temp) != 0 && strcmp("Accept-Language:",temp) != 0 && strcmp("Accept-Encoding:",temp) != 0 && strcmp("Authorization:",temp) != 0 && strcmp("Cache-Control:",temp) != 0 && 
-    strcmp("Connection:",temp) != 0 && strcmp("Content-Length:",temp) != 0 && strcmp("Content-Type:",temp) != 0   && strcmp("sec-ch-ua:",temp) != 0 && strcmp("sec-ch-ua-mobile:",temp) != 0 && strcmp("sec-ch-ua-platform:",temp) != 0 &&
-    strcmp("Upgrade-Insecure-Requests:",temp) != 0 && strcmp("Sec-Fetch-Site:",temp) != 0 && strcmp("Sec-Fetch-Mode:",temp) != 0 && strcmp("Sec-Fetch-User:",temp) != 0 && strcmp("Sec-Fetch-Dest:",temp) != 0 && strcmp("Postman-Token:",temp) != 0 && strcmp("Transfer-Encoding:",temp) != 0 && strcmp("Expect:",temp) != 0) 
-    {
-        free(temp); 
-        return -2;
-    }
-
-    free(temp);
-    
-    temp = ft_substr(header,i + 1,strlen(header));
-    
-    if(temp[strlen(temp + 1)] != '\r' && temp[strlen(temp + 1)] != '\n')
-        return -2;  
-    return 1;
-}
-
-int clients_obj::checkHeaders(int index)
-{
-    // when add char after \r\n will add in first of the second line
-    char *header;
-    int i;
-    string str = "";
-    i = index; 
-      
-    while (i < headerOfRequest.size())// sometimes in content has '\0' , dont loop
-    {
-        str.push_back(headerOfRequest[i]);
-        i++;
-    }
-    
-    i  = 0;
-    header = strtok((char*)(str.data()),"\n");
-    
-     
-    while (header != NULL)
-    {
-        i = 0;
-        while (header[i] && header[i] != ' ')
-            i++;
-        if(checkKeyValue(header,i) == -2)
-            return -2;
-        header = strtok(NULL,"\n");
-    }
-    return 1;
-}
-
-
-int clients_obj::checkHeaderOfreq_()
-{
-    int rtn = checkHeaderLine();
-
-    if(rtn == -1)
-        return -1;
-    
-    rtn = checkHeaders(rtn);
-    
-    return rtn;
-}
 
 
 int clients_obj::checkHeaderOfreq(int len)
@@ -206,7 +96,7 @@ int clients_obj::checkHeaderOfreq(int len)
             if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
-                if(checkHeaderOfreq_() == -2)
+                if(headerParss.checkHeaderOfreq_(headerOfRequest,tmp) == -2)
                     return -2;
                 
                 i = headerOfRequest.find("Transfer-Encoding: chunked");   // find way to check if boundry
@@ -261,9 +151,6 @@ int clients_obj::checkHeaderOfreq(int len)
     else
         return -2;
 }
- 
-// how to it can check if it is a duplicate request
-
 
 void  clients_obj::handling_chunked_data()
 {
@@ -401,30 +288,7 @@ void clients_obj::handling_form_data()
     }
 }
 
-void clients_obj::handle_post(int len)
-{
-    int rtn;
-    if(flag_ == 0) // to enter here one time
-    {
-        rtn = headerOfRequest.find("mp4");
-        if(rtn != -1)
-            MyFile.open(file.append(index).append(".mp4"));
-        rtn = headerOfRequest.find("jpeg");
-        if(rtn != -1)
-            MyFile.open("file.jpeg");
-        rtn = headerOfRequest.find("pdf");
-        if(rtn != -1)
-            MyFile.open("file.pdf");
-        flag_ = 1;
-    }
-    i += len;
-    if(i >= ContentLength )// finish recivng
-    {
-        MyFile << buffer.substr(headerOfRequest.size() + 2,ContentLength);
-        // cout << "recive from client: "  << client_socket << endl;
-        MyFile.close();
-    }
-}
+
 
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
@@ -435,19 +299,20 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     if(rtn == 0 || rtn == -1)
         return rtn;
     rtn = checkHeaderOfreq(len);
+ 
     if(rtn == -2)
         return -2;
     if(flag == 1) // if has content lenght
-        handle_post(len);
-    else if(flag == 2)
-    {
-        // check header line and headers
-         // without budy
-    }
-    if(flag == 3)
-        handling_chunked_data();
-    if(flag == 4)
-        handling_form_data();
+        bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_);
+    // else if(flag == 2)
+    // {
+    //     // check header line and headers
+    //      // without budy
+    // }
+    // if(flag == 3)
+    //     handling_chunked_data();
+    // if(flag == 4)
+    //     handling_form_data();
     
         
     return 1;
