@@ -148,88 +148,6 @@ int clients_obj::checkHeaderOfreq(int len)
 }
 
 
-
-void clients_obj::putDataTofile(string data)
-{
-    int pos = data.find("filename=\"");
- 
-    if(pos != -1)
-    {
-        int t = pos + 10;
-        while (data[t] != '"')
-            t++;
-        file =  data.substr(pos + 10,t - (pos + 10));
-        MyFile.open(file);
-        pos = data.find("Content-Type:");
-        while (data[pos] != '\r' && data[pos + 1] != '\n')
-            pos++;
-        pos += 4;
-        while (pos < data.size())
-        {
-            bodyofRequest.push_back(data[pos]);
-            pos++;
-        }
-        
-        MyFile << bodyofRequest;
-        file.clear();
-        bodyofRequest.clear();
-        MyFile.close();
-    }
-}
-
-void clients_obj::handling_form_data()
-{
-    if(flag_ == 5)
-    {
-        j = headerOfRequest.find("boundary");
-        tmp = j + 9;
-       
-        char *temp = (char*)headerOfRequest.data() + tmp;// because string() dont handle '\r'
-        tmp = 0;
-        while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
-            tmp++;
-        boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
-         
-        total_bytes_received = ContentLength;
-        i = 0;
-        bodyofRequest.clear();
-    }
- 
-    else
-        total_bytes_received += bytes_received;
-    if(total_bytes_received >= ContentLength)
-    { 
-        
-        size_t start_idx = i;
-        string separator = boundary;
-        vector<string> substrings; // clear ?
-
-        while (true) 
-        {
-            size_t end_idx = buffer.find(separator, start_idx);
-            if (end_idx == string::npos) 
-            {
-                substrings.push_back(buffer.substr(start_idx));
-                break;
-            }
-
-            substrings.push_back(buffer.substr(start_idx, end_idx - start_idx));
-            start_idx = end_idx + separator.length();
-        }
-        substrings.erase(substrings.end() - 1);// remove "--" after last boundry
-        string s;
-        vector<string>::iterator it = substrings.begin();
-        while (it != substrings.end())
-        { 
-            if(!it->empty())
-                putDataTofile(*it);
-            it++;
-        }
-    }
-}
-
-
-
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
     int rtn;
@@ -251,8 +169,8 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     }
     if(flag == 3)
         bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_);
-    // if(flag == 4)
-    //     handling_form_data();
+    if(flag == 4)
+        bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received);
     
         
     return 1;

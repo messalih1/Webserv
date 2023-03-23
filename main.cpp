@@ -3,29 +3,7 @@
 #include "utlis/utils.hpp"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int main(int ac, char *argv[])
+int main()
 {
     lunch_server serv;
  

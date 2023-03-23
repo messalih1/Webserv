@@ -12,6 +12,86 @@ parssingOfBody::parssingOfBody(/* args */)
  
 }
 
+void parssingOfBody::putDataTofile(string  data, string & bodyofRequest)
+{
+    int pos = data.find("filename=\"");
+ 
+    if(pos != -1)
+    {
+        int t = pos + 10;
+        while (data[t] != '"')
+            t++;
+        file =  data.substr(pos + 10,t - (pos + 10));
+        fd = open((char*)(file.data()),O_CREAT | O_RDWR , 0777);
+        pos = data.find("Content-Type:");
+        while (data[pos] != '\r' && data[pos + 1] != '\n')
+            pos++;
+        pos += 4;
+        while (pos < data.size())
+        {
+            bodyofRequest.push_back(data[pos]);
+            pos++;
+        }
+        write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
+        file.clear();
+        bodyofRequest.clear();
+        close(fd);
+    }
+}
+
+void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest, string &boundary,string & bodyofRequest ,int &total_bytes_received,unsigned long &ContentLength, unsigned long & i, int & bytes_received)
+{
+    // if(flag_ == 5)
+    // {
+    //     j = headerOfRequest.find("boundary");
+    //     tmp = j + 9;
+       
+    //     char *temp = (char*)headerOfRequest.data() + tmp;// because string() dont handle '\r'
+    //     tmp = 0;
+    //     while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
+    //         tmp++;
+    //     boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
+         
+    //     total_bytes_received = ContentLength;
+    //     i = 0;
+    //     bodyofRequest.clear();
+    // }
+ 
+    // else
+    total_bytes_received += bytes_received;
+    if(total_bytes_received >= ContentLength)
+    { 
+        
+        size_t start_idx = i;
+        string separator = boundary;
+        vector<string> substrings; // clear ?
+
+        while (true) 
+        {
+            size_t end_idx = buffer.find(separator, start_idx);
+            if (end_idx == string::npos) 
+            {
+                substrings.push_back(buffer.substr(start_idx));
+                break;
+            }
+
+            substrings.push_back(buffer.substr(start_idx, end_idx - start_idx));
+            start_idx = end_idx + separator.length();
+        }
+        substrings.erase(substrings.end() - 1);// remove "--" after last boundry
+        string s;
+        vector<string>::iterator it = substrings.begin();
+        while (it != substrings.end())
+        { 
+            if(!it->empty())
+                putDataTofile(*it,bodyofRequest);
+            it++;
+        }
+    }
+}
+
+
+
 void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, unsigned long &i, int &flag_)
 {
     int rtn;
@@ -19,7 +99,6 @@ void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::str
     i += len;
     if(i >= ContentLength )// finish recivng
     { 
-        
         exetention = std::to_string(rand() % 100000);
         rtn = headerOfRequest.find("mp4");
         if(rtn != -1)
@@ -27,6 +106,9 @@ void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::str
         rtn = headerOfRequest.find("jpg");
         if(rtn != -1)
             fd = open((char*)(file.append(exetention).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
+        rtn = headerOfRequest.find("jpeg");
+        if(rtn != -1)
+            fd = open((char*)(file.append(exetention).append(".jpeg").data()),O_CREAT | O_RDWR , 0777);
 
         rtn = headerOfRequest.find("pdf");
         if(rtn != -1)
