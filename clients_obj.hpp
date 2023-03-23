@@ -77,7 +77,7 @@ class clients_obj
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
  
         void putDataTofile(string data);
-        void handling_chunked_data();
+        
         void handling_form_data();
  
 

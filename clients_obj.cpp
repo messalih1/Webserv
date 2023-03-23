@@ -61,8 +61,6 @@ char * clients_obj::ft_substr(char const *s, unsigned int start, size_t len)
  
 int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
-    
-    
     char data[len];
     bzero(data, len);
     bytes_received = recv(client_socket, &data, len, 0);
@@ -80,9 +78,6 @@ int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, co
     }
     return 1;
 }
-
-
-
 
 int clients_obj::checkHeaderOfreq(int len)
 {
@@ -152,62 +147,7 @@ int clients_obj::checkHeaderOfreq(int len)
         return -2;
 }
 
-void  clients_obj::handling_chunked_data()
-{
-    int dec,rtn;
-    int i = 0;
-    tmp++;
-    index = std::to_string(tmp);
-    while (i < buffer.size())
-    {
-        if(isalnum(buffer[i]) || isalpha(buffer[i]))
-        {
-            int k = i;
-            while (isalnum(buffer[i]) || isalpha(buffer[i]))
-                i++;
-            
-            dec = std::stoul(buffer.substr(k,i), NULL, 16);
-            i+=2;
-            if(dec == 0 && flag_ == 0)
-            {
-                dec = headerOfRequest.find("boundary");
-                if(dec != -1)
-                {
-                    i = 0;
-                    buffer = bodyofRequest;
-                    flag_ = 5;
-                    handling_form_data();
-                    return ;
-                }
-                rtn = headerOfRequest.find("mp4");
-                if(rtn != -1)
-                    fd = open((char*)(file.append(index).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
-                rtn = headerOfRequest.find("jpg");
-                if(rtn != -1)
-                    fd = open((char*)(file.append(index).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
 
-                rtn = headerOfRequest.find("pdf");
-                if(rtn != -1)
-                    fd = open((char*)(file.append(index).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
-                rtn = headerOfRequest.find("text/plain");
-                 
-                if(rtn != -1)
-                    fd = open((char*)(file.append(index).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
-                 
-                write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
-                flag_ = 10;
-            }
-            while (dec--)
-            {
-                bodyofRequest.push_back(buffer[i]);
-                i++;
-            }
-            i += 2; 
-        }
-    }
-    // buffer.erase(buffer.begin(),buffer.end());
-    buffer.clear();
-}
 
 void clients_obj::putDataTofile(string data)
 {
@@ -304,13 +244,13 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
         return -2;
     if(flag == 1) // if has content lenght
         bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_);
-    // else if(flag == 2)
-    // {
-    //     // check header line and headers
-    //      // without budy
-    // }
-    // if(flag == 3)
-    //     handling_chunked_data();
+    else if(flag == 2)
+    {
+        // check header line and headers
+         // without budy
+    }
+    if(flag == 3)
+        bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_);
     // if(flag == 4)
     //     handling_form_data();
     

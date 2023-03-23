@@ -67,7 +67,6 @@ int parssingOfHeader::checkHeaders(int index, string headerOfRequest, int & tmp)
         str.push_back(headerOfRequest[i]);
         i++;
     }
-
     if(tmp)
     {
         i = str.find("Host: ");
@@ -147,7 +146,6 @@ int parssingOfHeader::checkHeaderOfreq_(string headerOfRequest, int & tmp)
  
     if(rtn == -1)
         return -2;
-    
     rtn = checkHeaders(rtn,headerOfRequest,tmp);
     
     return rtn;
