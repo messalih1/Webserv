@@ -92,13 +92,14 @@ void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest,
 
 
 
-void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, unsigned long &i, int &flag_)
+void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, unsigned long &i, int &flag_,int & client_socket)
 {
     int rtn;
-     
+    
     i += len;
     if(i >= ContentLength )// finish recivng
     { 
+        
         exetention = std::to_string(rand() % 100000);
         rtn = headerOfRequest.find("mp4");
         if(rtn != -1)
@@ -119,7 +120,12 @@ void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::str
             fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
         
         write(fd,(void*)(buffer.substr(headerOfRequest.size() + 3,ContentLength).data()),buffer.substr(headerOfRequest.size() + 3,ContentLength).size());
-
+        // headerOfRequest.clear();
+        // buffer.clear();
+        // headerOfRequest.clear();
+        // exetention.clear();
+        // file.clear();
+        // i = 0;
         close(fd);
     }
 }
@@ -181,7 +187,7 @@ void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfReque
         }
     }
     // buffer.erase(buffer.begin(),buffer.end());
-    buffer.clear();
+    buffer.clear();// handle chunked data when resend request
 }
 
 parssingOfBody::~parssingOfBody()

@@ -157,17 +157,20 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     if(rtn == 0 || rtn == -1)
         return rtn;
     rtn = checkHeaderOfreq(len);
- 
     if(rtn == -2)
         return -2;
     if(flag == 1) // if has content lenght
-        bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_);
+    {
+        
+        bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_,client_socket);
+    }
+    
     else if(flag == 2)
     {
         // check header line and headers
          // without budy
     }
-    if(flag == 3)
+    if(flag == 3)// // handle chunked data when resend request
         bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_);
     if(flag == 4)
         bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received);

@@ -25,17 +25,7 @@ lunch_server::lunch_server()
         throw throwException("error in setsockopt()");
     
     fcntl(fd_server, F_SETFL, O_NONBLOCK);
-    /*
-    kqueue() in blocking mode can handle multiple clients, but it may not be the most efficient way to do so.
-
-When kqueue() is used with blocking file descriptors, any I/O operation performed on a file descriptor will block the calling process until the operation completes. This means that if the program is waiting for I/O on one file descriptor, it cannot perform any other work while waiting, including handling I/O events on other file descriptors.
-
-In a multi-client scenario, this can result in poor performance and scalability, as the program may need to wait for I/O on multiple file descriptors simultaneously. If multiple file descriptors are used with blocking mode, the program may need to create multiple threads or processes to handle each file descriptor independently.
-
-To handle multiple clients efficiently, it is often better to use non-blocking file descriptors with kqueue(), as this allows the program to perform other work while waiting for I/O events on multiple file descriptors. This can enable a single thread or process to handle many connections simultaneously, improving performance and reducing overhead.
-
-In summary, while kqueue() in blocking mode can handle multiple clients, it may not be the most efficient approach in scenarios where multiple file descriptors need to be monitored simultaneously. Using non-blocking file descriptors can provide better performance and scalability in these scenarios.
-    */
+   
     if (bind(fd_server,  reinterpret_cast<struct sockaddr *> (&serv_struct), sizeof(serv_struct)) < 0) 
         throw throwException("error in bind()");
 
@@ -63,14 +53,16 @@ In summary, while kqueue() in blocking mode can handle multiple clients, it may 
             {
                 if ((fd_new_client = accept(fd_server, reinterpret_cast<struct sockaddr *> (&serv_struct), &len) ) < 0 )// will accept it
                     throw throwException("error in accept()");
-                // Add the client socket to the kqueue
+                
+                fcntl(fd_new_client, F_SETFL, O_NONBLOCK);
+            
+            
                 EV_SET(&kev, fd_new_client, EVFILT_READ, EV_ADD, 0, 0, NULL);// prepar new connection , new clinet for incomming data
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) == -1) // add new connection to kevents, 
                         throw throwException("error in kevent()");
                 else
                 {
-                    // cout << "New client connected\n";
-                    
+                     
                 }
             }
             else if( clients_events[i].filter == EVFILT_READ)
@@ -81,11 +73,12 @@ In summary, while kqueue() in blocking mode can handle multiple clients, it may 
                     throw throwException("error in rev()");
                 else if(rtnFromfnc == 0)// ||rtnFromfnc == -2 )
                 {
-                    // cout << "Client disconnected\n";
+                    cout << "Client disconnected\n";
                     EV_SET(&kev, client_socket, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(kq, &kev, 1, NULL, 0, NULL); 
 
                     close(client_socket);
+                    map_objs.erase(client_socket);// destroy the client map obj
                 }
                 
                 else if(rtnFromfnc == -2)
