@@ -61,7 +61,7 @@ class clients_obj
         int                 tmp;
         int                 fd;
         int                 j;
-        unsigned long       i;
+        int       i;
         unsigned long       ContentLength;
 
         clients_obj();
@@ -72,7 +72,7 @@ class clients_obj
         long long	ft_atoi(const char *str);
         char *ft_substr(char const *s, unsigned int start, size_t len);
         
-        int checkHeaderOfreq(int len);
+        int checkHeaderOfreq(int & len);
        
         int pushToBuffer(int client_socket,  struct kevent  kev,int len, const int   kq);
  

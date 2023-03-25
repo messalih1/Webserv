@@ -56,8 +56,8 @@ long long	parssingOfHeader::ft_atoi(const char *str)
 
 int parssingOfHeader::checkHeaders(int index, string headerOfRequest, int & tmp)
 {
+     
     // when add char after \r\n will add in first of the second line
-    char *header;
     int i;
     string str = "";
     i = index; 
@@ -67,7 +67,8 @@ int parssingOfHeader::checkHeaders(int index, string headerOfRequest, int & tmp)
         str.push_back(headerOfRequest[i]);
         i++;
     }
-    if(tmp)
+
+    if(tmp)// when upload to to server sould present this headers
     {
         i = str.find("Host: ");
         if(i == -1)
@@ -84,6 +85,22 @@ int parssingOfHeader::checkHeaders(int index, string headerOfRequest, int & tmp)
         i = str.find("Host: ");
         if(i == -1)
             return -2;
+    }
+    
+    i = 0;
+    while (str[i])
+    {
+        while (str[i] && str[i] != ':')
+            i++;
+        i+=2;
+        int k = i;
+        while (str[i] && str[i] != '\r' && str[i] != '\n'  && str[i + 1] != '\n') // || '\n'
+            i++;
+        if(str.substr(k,i - k).size() == 0)// if has empty value
+            return -2;
+        if(str[i] != '\r' && str[i] != '\n' && str[i + 1] == '\n')// if line dont end by '\r'
+            return -2;
+        i++;
     }
     
     return 1;
@@ -125,11 +142,11 @@ int parssingOfHeader::checkHeaderLine(string headerOfRequest, int &tmp)
 
     i++;
     j = i;
-    while (headerOfRequest[i] && headerOfRequest[i] != '\r' && headerOfRequest[i + 1] != '\n' )
+    while (headerOfRequest[i] &&  headerOfRequest[i] != '\r' && headerOfRequest[i] != '\n'  && headerOfRequest[i + 1] != '\n' )
         i++;
     temp = ft_substr(headerOfRequest.data(),j,i + 2); 
      
-    if( strcmp(temp,"HTTP/1.1\r\n") != 0 )
+    if( strcmp(temp,"HTTP/1.1\r\n") != 0 && strcmp(temp,"HTTP/1.1\n\n") != 0)
     {
         free(temp);
         return -1;

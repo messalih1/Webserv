@@ -1,39 +1,8 @@
-// first shure that all data is rescived
-
-// append -- to boundy
-
-
-// split by boundry
-
-int fd = open("file.txt",O_RDWR | O_CREAT, 0777 | O_TRUNC);
-write(fd,(void*)(buffer.data()),buffer.size());
-
-
-// split by boundry and take 
-
-----------------------------615270213988950631326502
-Content-Disposition: form-data; name="file1"; filename="dddok"
-Content-Type: application/octet-stream
-
-ahmed yassine
-mustapha 
-----------------------------615270213988950631326502
-
-
-
-=>
-Content-Disposition: form-data; name="file1"; filename="dddok"
-Content-Type: application/octet-stream
-
-ahmed yassine
-mustapha 
-
-
-and search filename
-
-
-
-----------------------------110489695629298482654183
-Content-Disposition: form-data; name="dd"; filename="DO"
-Content-Type: application/octet-stream
-
+tet: 
+Content-Type: text/plain
+User-Agent: PostmanRuntime/7.31.0
+Accept: */*
+Postman-Token: ce894f62-de2e-4304-b06c-66f017a8ad4f
+Host: 127.0.0.1:8081
+Connection: keep-alive
+Content-Length: 5

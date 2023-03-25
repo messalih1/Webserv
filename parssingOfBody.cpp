@@ -39,7 +39,7 @@ void parssingOfBody::putDataTofile(string  data, string & bodyofRequest)
     }
 }
 
-void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest, string &boundary,string & bodyofRequest ,int &total_bytes_received,unsigned long &ContentLength, unsigned long & i, int & bytes_received)
+void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest, string &boundary,string & bodyofRequest ,int &total_bytes_received,unsigned long &ContentLength,  int & i, int & bytes_received)
 {
     // if(flag_ == 5)
     // {
@@ -58,7 +58,7 @@ void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest,
     // }
  
     // else
-    total_bytes_received += bytes_received;
+        total_bytes_received += bytes_received;
     if(total_bytes_received >= ContentLength)
     { 
         
@@ -92,7 +92,7 @@ void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest,
 
 
 
-void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, unsigned long &i, int &flag_,int & client_socket)
+void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, int &i, int &flag_,int & client_socket)
 {
     int rtn;
     
@@ -120,52 +120,43 @@ void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::str
             fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
         
         write(fd,(void*)(buffer.substr(headerOfRequest.size() + 3,ContentLength).data()),buffer.substr(headerOfRequest.size() + 3,ContentLength).size());
-        // headerOfRequest.clear();
-        // buffer.clear();
-        // headerOfRequest.clear();
-        // exetention.clear();
-        // file.clear();
-        // i = 0;
+        
         close(fd);
     }
 }
 
 
-void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfRequest, string &bodyofRequest, int & flag_)
+void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfRequest, string &bodyofRequest, int & flag_,  int & i,  int & bytes)
 {
+     
     int dec,rtn;
-    int i = 0;
- 
-    while (i < buffer.size())
+    int j = 0;
+    while (j < bytes)
     {
         if(isalnum(buffer[i]) || isalpha(buffer[i]))
         {
             int k = i;
-            while (isalnum(buffer[i]) || isalpha(buffer[i]))
+            while ((isalnum(buffer[i]) || isalpha(buffer[i])))
+            {
                 i++;
-            
+                j++;
+            }
+             
             dec = std::stoul(buffer.substr(k,i), NULL, 16);
+             
             i+=2;
+            j+=2;
             if(dec == 0 && flag_ == 0)
             {
-                // dec = headerOfRequest.find("boundary");
-                // if(dec != -1)
-                // {
-                //     i = 0;
-                //     buffer = bodyofRequest;
-                //     flag_ = 5;
-                //     handling_form_data();
-                //     return ;
-                // }
                 exetention = std::to_string(rand() % 100000);
                 rtn = headerOfRequest.find("mp4");
-                
+               
                 if(rtn != -1)
                     fd = open((char*)(file.append(exetention).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
-                rtn = headerOfRequest.find("jpg");
+                rtn = headerOfRequest.find("jpeg");
                 if(rtn != -1)
-                    fd = open((char*)(file.append(exetention).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
-
+                    fd = open((char*)(file.append(exetention).append(".jpeg").data()),O_CREAT | O_RDWR , 0777);
+                 
                 rtn = headerOfRequest.find("pdf");
                 if(rtn != -1)
                     fd = open((char*)(file.append(exetention).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
@@ -174,20 +165,22 @@ void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfReque
                 if(rtn != -1)
                     fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
                 
-                
                 write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
+                
+                close(fd);
                 flag_ = 10;
             }
             while (dec--)
             {
                 bodyofRequest.push_back(buffer[i]);
                 i++;
+                j++;
             }
-            i += 2; 
+            i+=2; 
+            j+=2; 
         }
+        j++;
     }
-    // buffer.erase(buffer.begin(),buffer.end());
-    buffer.clear();// handle chunked data when resend request
 }
 
 parssingOfBody::~parssingOfBody()

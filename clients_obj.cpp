@@ -76,19 +76,19 @@ int clients_obj::pushToBuffer(int client_socket,  struct kevent  kev,int len, co
         buffer.push_back(data[j]);
         j++;
     }
-    return 1;
+    return bytes_received;
 }
 
-int clients_obj::checkHeaderOfreq(int len)
+int clients_obj::checkHeaderOfreq(int & len)
 {
     int pos = 0;
     
     while (buffer[pos] && flag == 0)// for entring one time
     { 
-        if(buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+        if((buffer[pos] == '\r' || buffer[pos] == '\n') && buffer[pos + 1] == '\n')
         {
             pos += 2;
-            if(buffer[pos] == '\r' && buffer[pos + 1] == '\n' )
+            if((buffer[pos] == '\r' || buffer[pos] == '\n') && buffer[pos + 1] == '\n' )
             {
                 headerOfRequest = buffer.substr(0,pos - 1);// not include \r\n
                 if(headerParss.checkHeaderOfreq_(headerOfRequest,tmp) == -2)
@@ -97,7 +97,9 @@ int clients_obj::checkHeaderOfreq(int len)
                 i = headerOfRequest.find("Transfer-Encoding: chunked");   // find way to check if boundry
                 if(i != -1)
                 { 
-                    buffer.erase(buffer.begin(),buffer.begin() + pos + 2);
+                    // buffer.erase(buffer.begin(),buffer.begin() + pos + 2);
+                    i = pos  + 2;
+                    len -= i;
                     flag = 3;
                     return 1;
                 }
@@ -116,7 +118,7 @@ int clients_obj::checkHeaderOfreq(int len)
                         tmp = j + 9;
                         char *temp = (char*)buffer.data() + tmp;// because string() dont handle '\r'
                         tmp = 0;
-                        while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
+                        while (temp[tmp] != '\r' && temp[tmp] != '\n' && temp[tmp + 1] != '\n')
                             tmp++;
                         boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
                         
@@ -147,33 +149,31 @@ int clients_obj::checkHeaderOfreq(int len)
         return -2;
 }
 
-
+// add timer for incommign request if not recsive it close connection
 int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,int len, const int   kq)
 {
     int rtn;
-
+    int t;
     rtn = pushToBuffer(client_socket,  kev,len, kq);
-     
+     t = rtn; 
     if(rtn == 0 || rtn == -1)
         return rtn;
-    rtn = checkHeaderOfreq(len);
+    rtn = checkHeaderOfreq(rtn);
     if(rtn == -2)
         return -2;
     if(flag == 1) // if has content lenght
-    {
-        
         bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_,client_socket);
-    }
     
     else if(flag == 2)
     {
         // check header line and headers
          // without budy
     }
-    if(flag == 3)// // handle chunked data when resend request
-        bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_);
-    if(flag == 4)
-        bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received);
+    else if(flag == 3)// // handle chunked data when resend request
+        bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_,i,t);
+    
+    // if(flag == 4)
+    //     bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received);
     
         
     return 1;
