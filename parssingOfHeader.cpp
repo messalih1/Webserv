@@ -94,7 +94,7 @@ int parssingOfHeader::checkHeaders(int index, string headerOfRequest, int & tmp)
             i++;
         i+=2;
         int k = i;
-        while (str[i] && str[i] != '\r' && str[i] != '\n'  && str[i + 1] != '\n') // || '\n'
+        while (str[i] && str[i] != '\r' && str[i] != '\n'  && str[i + 1] != '\n')  
             i++;
         if(str.substr(k,i - k).size() == 0)// if has empty value
             return -2;

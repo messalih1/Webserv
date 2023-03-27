@@ -1,8 +1,14 @@
-tet: 
-Content-Type: text/plain
-User-Agent: PostmanRuntime/7.31.0
-Accept: */*
-Postman-Token: ce894f62-de2e-4304-b06c-66f017a8ad4f
-Host: 127.0.0.1:8081
-Connection: keep-alive
-Content-Length: 5
+if(dec == 0 && flag_ == 0)
+{
+    dec = headerOfRequest.find("boundary");
+    if(dec != -1)
+    {
+        i = 0;
+        buffer = bodyofRequest;
+        flag_ = 5;
+        handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
+        return ;
+    }
+    create_file_and_put_content(bodyofRequest,headerOfRequest);
+    flag_ = 10;
+}

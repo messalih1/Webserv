@@ -155,6 +155,7 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     int rtn;
     int t;
     rtn = pushToBuffer(client_socket,  kev,len, kq);
+    
      t = rtn; 
     if(rtn == 0 || rtn == -1)
         return rtn;
@@ -162,19 +163,16 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
     if(rtn == -2)
         return -2;
     if(flag == 1) // if has content lenght
-        bodyParss.handle_post(len,headerOfRequest,buffer,ContentLength,i,flag_,client_socket);
+        bodyParss.handle_post(len,bodyofRequest,headerOfRequest,buffer,ContentLength,i,flag_,client_socket);
     
     else if(flag == 2)
     {
-        // check header line and headers
-         // without budy
+        // without budy => GET method
     }
-    else if(flag == 3)// // handle chunked data when resend request
-        bodyParss.handling_chunked_data(buffer,headerOfRequest,bodyofRequest,flag_,i,t);
-    
-    // if(flag == 4)
-    //     bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received);
-    
+    else if(flag == 3)// // handle chunked data when resend request 
+        bodyParss.handling_chunked_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,t,flag_);
+    else if(flag == 4)
+        bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received,flag_);
         
     return 1;
 }

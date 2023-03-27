@@ -36,7 +36,7 @@ using std::vector;
 using std::stack;
 
 
-#define PORT  8081
+#define PORT  8080
 #define MAX_EVENTS 200
 
 class lunch_server

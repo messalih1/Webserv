@@ -6,7 +6,7 @@ C_FILES = main.cpp  lunch_server.cpp clients_obj.cpp parssingOfHeader.cpp parssi
 
 H_FILES =   lunch_server.hpp clients_obj.hpp  parssingOfHeader.hpp parssingOfBody.hpp
 
-C_FLAGS =-std=c++98  #-g -fsanitize=address #-Wall -Wextra -Werror -std=c++98
+C_FLAGS =-std=c++98  -g # -fsanitize=address #-Wall -Wextra -Werror -std=c++98
 
 O_FILES = $(C_FILES:.cpp=.o)
 

@@ -12,6 +12,56 @@ parssingOfBody::parssingOfBody(/* args */)
  
 }
 
+char *ft_substr_(char const *s, unsigned int start, size_t len)
+{
+	size_t	i;
+	size_t	j;
+	char	*str;
+
+	str = (char*)malloc(sizeof(*s) * (len - start + 1));
+	if (!str)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (s[i])
+	{
+		if (i >= start && j < len - start)
+		{
+			str[j] = s[i];
+			j++;
+		}
+		i++;
+	}
+	str[j] = 0;
+	return (str);
+}
+
+void parssingOfBody::create_file_and_put_content(string & bodyofRequest,string & headerOfRequest)
+{
+    int rtn;
+
+    exetention = std::to_string(rand() % 100000);
+    
+    if( (rtn = headerOfRequest.find("mp4") ) != -1) 
+        fd = open((char*)(file.append(exetention).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
+    else if((rtn = headerOfRequest.find("mp3")) != -1 )
+        fd = open((char*)(file.append(exetention).append(".mp3").data()),O_CREAT | O_RDWR , 0777);
+    else if((rtn = headerOfRequest.find("jpeg")) != -1 )
+        fd = open((char*)(file.append(exetention).append(".jpeg").data()),O_CREAT | O_RDWR , 0777);
+    else if((rtn = headerOfRequest.find("jpg")) != -1 )
+        fd = open((char*)(file.append(exetention).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
+    else if((rtn = headerOfRequest.find("png")) != -1 )
+        fd = open((char*)(file.append(exetention).append(".png").data()),O_CREAT | O_RDWR , 0777);
+    else if((rtn = headerOfRequest.find("pdf")) != -1)
+        fd = open((char*)(file.append(exetention).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
+    else // is a text file such as html ..
+        fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);
+    
+    write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
+    
+    close(fd);
+}
+
 void parssingOfBody::putDataTofile(string  data, string & bodyofRequest)
 {
     int pos = data.find("filename=\"");
@@ -39,25 +89,24 @@ void parssingOfBody::putDataTofile(string  data, string & bodyofRequest)
     }
 }
 
-void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest, string &boundary,string & bodyofRequest ,int &total_bytes_received,unsigned long &ContentLength,  int & i, int & bytes_received)
+void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest, string &boundary,string & bodyofRequest ,int &total_bytes_received,unsigned long &ContentLength,  int & i, int & bytes_received, int & flag_)
 {
-    // if(flag_ == 5)
-    // {
-    //     j = headerOfRequest.find("boundary");
-    //     tmp = j + 9;
+    if(flag_ == 5)
+    {
+        int j = headerOfRequest.find("boundary");
        
-    //     char *temp = (char*)headerOfRequest.data() + tmp;// because string() dont handle '\r'
-    //     tmp = 0;
-    //     while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
-    //         tmp++;
-    //     boundary.append("--").append(ft_substr(temp,0,tmp));// free boundry and temp?
-         
-    //     total_bytes_received = ContentLength;
-    //     i = 0;
-    //     bodyofRequest.clear();
-    // }
- 
-    // else
+        int tmp = j + 9;
+       
+        char *temp = (char*)headerOfRequest.data() + tmp;// because string() dont handle '\r'
+        tmp = 0;
+        while (temp[tmp] != '\r' && temp[tmp + 1] != '\n')
+            tmp++;
+        boundary.append("--").append(ft_substr_(temp,0,tmp));// free boundry and temp?    
+        total_bytes_received = ContentLength;
+        i = 0;
+        bodyofRequest.clear();
+    }
+    else
         total_bytes_received += bytes_received;
     if(total_bytes_received >= ContentLength)
     { 
@@ -92,46 +141,14 @@ void parssingOfBody::handling_form_data(string& buffer, string &headerOfRequest,
 
 
 
-void parssingOfBody::handle_post(int len, std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, int &i, int &flag_,int & client_socket)
+
+void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfRequest, string &boundary,string &bodyofRequest, int & total_bytes_received, unsigned long & ContentLength, int & i, int & bytes_received,int & flag_)
 {
-    int rtn;
     
-    i += len;
-    if(i >= ContentLength )// finish recivng
-    { 
-        
-        exetention = std::to_string(rand() % 100000);
-        rtn = headerOfRequest.find("mp4");
-        if(rtn != -1)
-            fd = open((char*)(file.append(exetention).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
-        rtn = headerOfRequest.find("jpg");
-        if(rtn != -1)
-            fd = open((char*)(file.append(exetention).append(".jpg").data()),O_CREAT | O_RDWR , 0777);
-        rtn = headerOfRequest.find("jpeg");
-        if(rtn != -1)
-            fd = open((char*)(file.append(exetention).append(".jpeg").data()),O_CREAT | O_RDWR , 0777);
-
-        rtn = headerOfRequest.find("pdf");
-        if(rtn != -1)
-            fd = open((char*)(file.append(exetention).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
-        rtn = headerOfRequest.find("text/plain"); // ?
-            
-        if(rtn != -1)
-            fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
-        
-        write(fd,(void*)(buffer.substr(headerOfRequest.size() + 3,ContentLength).data()),buffer.substr(headerOfRequest.size() + 3,ContentLength).size());
-        
-        close(fd);
-    }
-}
-
-
-void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfRequest, string &bodyofRequest, int & flag_,  int & i,  int & bytes)
-{
      
-    int dec,rtn;
-    int j = 0;
-    while (j < bytes)
+    int dec;
+     int j = 0;
+    while (j < bytes_received)
     {
         if(isalnum(buffer[i]) || isalpha(buffer[i]))
         {
@@ -148,27 +165,21 @@ void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfReque
             j+=2;
             if(dec == 0 && flag_ == 0)
             {
-                exetention = std::to_string(rand() % 100000);
-                rtn = headerOfRequest.find("mp4");
-               
-                if(rtn != -1)
-                    fd = open((char*)(file.append(exetention).append(".mp4").data()),O_CREAT | O_RDWR , 0777);
-                rtn = headerOfRequest.find("jpeg");
-                if(rtn != -1)
-                    fd = open((char*)(file.append(exetention).append(".jpeg").data()),O_CREAT | O_RDWR , 0777);
-                 
-                rtn = headerOfRequest.find("pdf");
-                if(rtn != -1)
-                    fd = open((char*)(file.append(exetention).append(".pdf").data()),O_CREAT | O_RDWR , 0777);
-                rtn = headerOfRequest.find("text/plain"); // ?
-                    
-                if(rtn != -1)
-                    fd = open((char*)(file.append(exetention).data()),O_CREAT | O_RDWR , 0777);// should handle any text file
-                
-                write(fd,(void*)(bodyofRequest.data()),bodyofRequest.size());
-                
-                close(fd);
-                flag_ = 10;
+                if(dec == 0 && flag_ == 0)
+                {
+                    dec = headerOfRequest.find("boundary");
+                    if(dec != -1)
+                    {
+                        i = 0;
+                        buffer = bodyofRequest;
+                        flag_ = 5;
+                        handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
+                        return ;
+                    }
+                    create_file_and_put_content(bodyofRequest,headerOfRequest);
+                    flag_ = 10;
+                }
+                return;
             }
             while (dec--)
             {
@@ -180,6 +191,19 @@ void  parssingOfBody::handling_chunked_data(string &buffer,string &headerOfReque
             j+=2; 
         }
         j++;
+    }
+}
+
+
+void parssingOfBody::handle_post(int len,std::string & bodyofRequest ,std::string &headerOfRequest, std::string &buffer, unsigned long &ContentLength, int &i, int &flag_,int & client_socket)
+{
+    int rtn;
+    
+    i += len;
+    if(i >= ContentLength )// finish recivng
+    { 
+        bodyofRequest = buffer.substr(headerOfRequest.size() + 3,ContentLength);
+        create_file_and_put_content(bodyofRequest,headerOfRequest);
     }
 }
 
