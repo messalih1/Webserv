@@ -1,14 +1,137 @@
-if(dec == 0 && flag_ == 0)
-{
-    dec = headerOfRequest.find("boundary");
-    if(dec != -1)
+  int pos = buffer.find("0\r\n\r\n");
+    if(pos != -1)
     {
-        i = 0;
-        buffer = bodyofRequest;
-        flag_ = 5;
-        handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
-        return ;
+        int k = 0;
+     
+        k = 0;
+        while(i < buffer.size())
+        {
+            std::string integr;
+            if((buffer[i] =='\r' && buffer[i+1] == '\n'))
+            {
+                i+=2;
+            }
+            if(isdigit(buffer[i]) || isalpha(buffer[i]))
+            {
+                while (buffer[i] !='\r' && buffer[i+1] != '\n')
+                {
+                    integr += buffer[i];
+                    i++;
+                }
+                k = (int)strtol(integr.c_str(), NULL, 16);
+            }
+            if((buffer[i] =='\r' && buffer[i+1] == '\n'))
+            {
+                i+=2;
+            }
+            while (k)
+            {
+                bodyofRequest += buffer[i];
+                k--;
+                i++;
+            }
+        }
+        
+        // cout << headerOfRequest << endl;
+        // cout << "\n\n";
     }
-    create_file_and_put_content(bodyofRequest,headerOfRequest);
-    flag_ = 10;
-}
+
+
+
+    // while (i < buffer.size())
+        // {
+        //     if(isalnum(buffer[i]) || isalpha(buffer[i]))
+        //     {
+        //         int k = i;
+        //         while ((isalnum(buffer[i]) || isalpha(buffer[i])))
+        //             i++;
+                
+        //         dec = std::stoul(buffer.substr(k,i), NULL, 16);
+                
+        //         i+=2;
+        //         if(dec == 0 && flag_ == 0)
+        //         {
+        //             dec = headerOfRequest.find("boundary");
+        //             if(dec != -1)
+        //             {
+        //                 i = 0;
+        //                 buffer = bodyofRequest;
+        //                 flag_ = 5;
+                         
+        //                 handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
+        //                 return ;
+        //             }
+        //             create_file_and_put_content(bodyofRequest,headerOfRequest);
+        //             flag_ = 10;
+               
+        //             return;
+        //         }
+        //         while (dec--)
+        //         {
+                   
+        //             bodyofRequest.push_back(buffer[i]);
+        //             i++;
+        //         }
+        //         i+=2; 
+        //     }
+        // }
+        // if(flag_ == 0)
+        // {
+        //     int dec = headerOfRequest.find("boundary");
+            
+        //     if(dec != -1)
+        //     {
+        //         // cout << "HERER\n";
+        //         i = 0;
+        //         buffer = bodyofRequest;
+        //         flag_ = 5;
+        //         handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
+        //         return ;
+        //     }
+        //     create_file_and_put_content(bodyofRequest,headerOfRequest);
+            
+        //     flag_ = 10;
+        // }
+
+
+
+
+         int dec;
+        while (i < buffer.size())
+        {
+            if(isalnum(buffer[i]) || isalpha(buffer[i]))
+            {
+                int k = i;
+                while ((isalnum(buffer[i]) || isalpha(buffer[i])))
+                    i++;
+                
+                dec = std::stoul(buffer.substr(k,i), NULL, 16);
+                 
+                i+=2;
+                while (dec--)
+                {
+                    bodyofRequest.push_back(buffer[i]);
+                    i++;
+                }
+                i+=2; 
+            }
+        }
+        
+        
+        int m = headerOfRequest.find("boundary");
+        if(m != -1)
+        {
+            
+            i = 0;
+            buffer = bodyofRequest;
+            flag_ = 5;
+             
+            handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest ,total_bytes_received,ContentLength,  i, bytes_received,flag_);
+
+            return ;
+        }
+      
+   
+        //     create_file_and_put_content(bodyofRequest,headerOfRequest);
+            
+        //     flag_ = 10;

@@ -97,7 +97,7 @@ int clients_obj::checkHeaderOfreq(int & len)
                 i = headerOfRequest.find("Transfer-Encoding: chunked");   // find way to check if boundry
                 if(i != -1)
                 { 
-                    // buffer.erase(buffer.begin(),buffer.begin() + pos + 2);
+                     
                     i = pos  + 2;
                     len -= i;
                     flag = 3;
@@ -170,7 +170,11 @@ int clients_obj::recv_from_evry_client(int client_socket,  struct kevent  kev,in
         // without budy => GET method
     }
     else if(flag == 3)// // handle chunked data when resend request 
+    {
+      
         bodyParss.handling_chunked_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,t,flag_);
+
+    }
     else if(flag == 4)
         bodyParss.handling_form_data(buffer,headerOfRequest,boundary,bodyofRequest,total_bytes_received,ContentLength,i,bytes_received,flag_);
         

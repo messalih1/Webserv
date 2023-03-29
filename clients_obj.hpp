@@ -62,7 +62,7 @@ class clients_obj
         int                 fd;
         int                 j;
         int       i;
-        unsigned long       ContentLength;
+        int       ContentLength;
 
         clients_obj();
        

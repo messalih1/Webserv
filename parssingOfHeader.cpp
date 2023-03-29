@@ -164,7 +164,6 @@ int parssingOfHeader::checkHeaderOfreq_(string headerOfRequest, int & tmp)
     if(rtn == -1)
         return -2;
     rtn = checkHeaders(rtn,headerOfRequest,tmp);
-    
     return rtn;
 }
 
